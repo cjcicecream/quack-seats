@@ -14,6 +14,7 @@ const StudentPreferences = () => {
   const [preferences, setPreferences] = useState<string[]>([]);
   const [comments, setComments] = useState("");
   const [maxPreferences, setMaxPreferences] = useState(3);
+  const [className, setClassName] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -31,15 +32,16 @@ const StudentPreferences = () => {
 
   const loadPreviousPreferences = async (studentData: { id: string; class_id: string }) => {
     try {
-      // Get max preferences from class
+      // Get max preferences and class name from class
       const { data: classData } = await supabase
         .from("classes")
-        .select("max_preferences")
+        .select("max_preferences, name")
         .eq("id", studentData.class_id)
         .single();
 
       if (classData) {
         setMaxPreferences(classData.max_preferences);
+        setClassName(classData.name);
         setPreferences(Array(classData.max_preferences).fill(""));
       }
 
@@ -164,6 +166,11 @@ const StudentPreferences = () => {
             <CardTitle className="text-3xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               🐣quack groups🐣
             </CardTitle>
+            {className && (
+              <div className="text-xl font-semibold text-foreground mt-2">
+                Class: {className}
+              </div>
+            )}
             <CardDescription className="text-lg">
               Who would you like to sit with? (Rank your preferences)
             </CardDescription>
