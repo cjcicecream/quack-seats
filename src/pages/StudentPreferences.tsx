@@ -34,7 +34,8 @@ const StudentPreferences = () => {
       .maybeSingle();
     
     if (error || !studentData) {
-      toast.error("Student profile not found");
+      await supabase.auth.signOut();
+      toast.error("Student profile not found. Please sign up with your class code.");
       navigate("/student/login");
       return null;
     }

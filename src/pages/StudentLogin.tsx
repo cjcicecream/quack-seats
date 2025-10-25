@@ -114,12 +114,26 @@ const StudentLogin = () => {
         return;
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password,
       });
 
       if (error) throw error;
+
+      // Check if student profile exists
+      const { data: studentProfile } = await supabase
+        .from("students")
+        .select("id")
+        .eq("auth_user_id", authData.user.id)
+        .maybeSingle();
+
+      if (!studentProfile) {
+        await supabase.auth.signOut();
+        toast.error("No student profile found. Please sign up first with a class code.");
+        setLoading(false);
+        return;
+      }
 
       toast.success("Welcome back!");
       navigate("/student/preferences");
