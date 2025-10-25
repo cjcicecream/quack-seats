@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import PotatoAvatar from "@/components/PotatoAvatar";
+import DuckAvatar from "@/components/DuckAvatar";
 import { ArrowLeft } from "lucide-react";
 
 const StudentFinalView = () => {
@@ -144,7 +144,7 @@ const StudentFinalView = () => {
                           >
                             {seat.student ? (
                               <div className={isCurrentStudent ? "relative" : ""}>
-                                <PotatoAvatar name={seat.student.name} size="md" />
+                                <DuckAvatar name={seat.student.name} size="md" />
                                 {isCurrentStudent && (
                                   <div className="absolute -top-2 -right-2 text-2xl animate-bounce">
                                     👈

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import PotatoAvatar from "@/components/PotatoAvatar";
+import DuckAvatar from "@/components/DuckAvatar";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 
 interface Arrangement {
@@ -142,7 +142,7 @@ const SeatingChart = () => {
                     {table.seats?.map((seat: any, seatIndex: number) => (
                       <div key={seatIndex} className="flex justify-center">
                         {seat.student ? (
-                          <PotatoAvatar name={seat.student.name} size="md" />
+                          <DuckAvatar name={seat.student.name} size="md" />
                         ) : (
                           <div className="w-16 h-20 border-2 border-dashed border-muted rounded-lg flex items-center justify-center text-3xl">
                             🐥
