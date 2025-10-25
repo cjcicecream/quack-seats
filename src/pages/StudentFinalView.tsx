@@ -1,44 +1,49 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import FloatingBubbles from "@/components/FloatingBubbles";
 import DuckAvatar from "@/components/DuckAvatar";
-import { ArrowLeft } from "lucide-react";
+import FloatingBubbles from "@/components/FloatingBubbles";
+import { ArrowLeft, LogOut } from "lucide-react";
 
 const StudentFinalView = () => {
-  const navigate = useNavigate();
   const [arrangement, setArrangement] = useState<any>(null);
   const [studentName, setStudentName] = useState("");
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    checkStudent();
-    loadArrangement();
-  }, []);
-
-  const checkStudent = () => {
-    const name = sessionStorage.getItem("student_name");
-    if (!name) {
+  const checkStudent = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      toast.error("Please log in first");
       navigate("/student/login");
-      return;
+      return null;
     }
-    setStudentName(name);
+    
+    const { data: studentData } = await supabase
+      .from("students")
+      .select("id, class_id, name")
+      .eq("auth_user_id", session.user.id)
+      .single();
+    
+    if (!studentData) {
+      toast.error("Student profile not found");
+      navigate("/student/login");
+      return null;
+    }
+    
+    setStudentName(studentData.name);
+    return studentData;
   };
 
-  const loadArrangement = async () => {
+  const loadArrangement = async (classId: string) => {
     try {
-      const classId = sessionStorage.getItem("class_id");
-      if (!classId) {
-        navigate("/student/login");
-        return;
-      }
-
       const { data, error } = await supabase
         .from("seating_arrangements")
-        .select("*")
+        .select("arrangement")
         .eq("class_id", classId)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -47,7 +52,7 @@ const StudentFinalView = () => {
       if (error) throw error;
 
       if (data) {
-        setArrangement(data.arrangement);
+        setArrangement(data.arrangement as any);
       }
     } catch (error: any) {
       toast.error("Failed to load seating chart");
@@ -55,6 +60,16 @@ const StudentFinalView = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const init = async () => {
+      const studentData = await checkStudent();
+      if (studentData) {
+        await loadArrangement(studentData.class_id);
+      }
+    };
+    init();
+  }, []);
 
   const findStudentLocation = () => {
     if (!arrangement || !studentName) return null;
@@ -73,24 +88,37 @@ const StudentFinalView = () => {
     return null;
   };
 
-  const studentLocation = findStudentLocation();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Logged out successfully");
+    navigate("/student/login");
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
+  const studentLocation = findStudentLocation();
+
   return (
     <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
       <FloatingBubbles />
-
+      
       <div className="max-w-6xl mx-auto relative z-10">
-        <div className="flex justify-between items-center mb-6">
-          <Button variant="ghost" onClick={() => navigate("/student/preferences")}>
+        <div className="flex justify-between items-center mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/student/login")}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Update Preferences
+            Back to Login
           </Button>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Home
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
           </Button>
         </div>
 

@@ -125,18 +125,21 @@ export type Database = {
       }
       students: {
         Row: {
+          auth_user_id: string | null
           class_id: string
           created_at: string | null
           id: string
           name: string
         }
         Insert: {
+          auth_user_id?: string | null
           class_id: string
           created_at?: string | null
           id?: string
           name: string
         }
         Update: {
+          auth_user_id?: string | null
           class_id?: string
           created_at?: string | null
           id?: string

@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 
 const StudentPreferences = () => {
   const [preferences, setPreferences] = useState<string[]>([]);
@@ -17,78 +17,120 @@ const StudentPreferences = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    checkStudent();
-    loadPreviousPreferences();
-  }, []);
-
-  const checkStudent = () => {
-    const studentId = sessionStorage.getItem("student_id");
-    if (!studentId) {
+  const checkStudent = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      toast.error("Please log in first");
       navigate("/student/login");
+      return null;
     }
+    
+    // Get student data
+    const { data: studentData, error } = await supabase
+      .from("students")
+      .select("id, class_id, name")
+      .eq("auth_user_id", session.user.id)
+      .single();
+    
+    if (error || !studentData) {
+      toast.error("Student profile not found");
+      navigate("/student/login");
+      return null;
+    }
+    
+    return studentData;
   };
 
-  const loadPreviousPreferences = async () => {
+  const loadPreviousPreferences = async (studentData: { id: string; class_id: string }) => {
     try {
-      const classId = sessionStorage.getItem("class_id");
-      const studentId = sessionStorage.getItem("student_id");
-
-      if (!classId || !studentId) return;
-
-      // Get class settings
+      // Get max preferences from class
       const { data: classData } = await supabase
         .from("classes")
         .select("max_preferences")
-        .eq("id", classId)
+        .eq("id", studentData.class_id)
         .single();
 
       if (classData) {
         setMaxPreferences(classData.max_preferences);
-        setPreferences(new Array(classData.max_preferences).fill(""));
+        setPreferences(Array(classData.max_preferences).fill(""));
       }
 
-      // Get previous preferences
-      const { data } = await supabase
+      // Get previous preferences if any
+      const { data: prefData } = await supabase
         .from("student_preferences")
-        .select("*")
-        .eq("student_id", studentId)
+        .select("preferences, additional_comments")
+        .eq("student_id", studentData.id)
+        .eq("class_id", studentData.class_id)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (data) {
-        const prefs = data.preferences as any[];
-        setPreferences(prefs.map((p: any) => p.name));
-        setComments(data.additional_comments || "");
+      if (prefData) {
+        const prefs = prefData.preferences as Array<{ name: string; rank: number }>;
+        const sortedPrefs = prefs.sort((a, b) => a.rank - b.rank);
+        const names = sortedPrefs.map(p => p.name);
+        
+        setPreferences([...names, ...Array(Math.max(0, (classData?.max_preferences || 3) - names.length)).fill("")]);
+        setComments(prefData.additional_comments || "");
       }
     } catch (error: any) {
-      console.error("Failed to load preferences:", error);
+      console.error("Error loading preferences:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const init = async () => {
+      const studentData = await checkStudent();
+      if (studentData) {
+        await loadPreviousPreferences(studentData);
+      }
+    };
+    init();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const studentId = sessionStorage.getItem("student_id");
-      const classId = sessionStorage.getItem("class_id");
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Please log in first");
+        navigate("/student/login");
+        return;
+      }
 
-      if (!studentId || !classId) throw new Error("Not logged in");
+      const { data: studentData } = await supabase
+        .from("students")
+        .select("id, class_id")
+        .eq("auth_user_id", session.user.id)
+        .single();
 
-      const prefs = preferences
-        .filter((p) => p.trim())
-        .map((name, index) => ({ name: name.trim(), rank: index + 1 }));
+      if (!studentData) {
+        toast.error("Student profile not found");
+        return;
+      }
 
-      const { error } = await supabase.from("student_preferences").insert({
-        student_id: studentId,
-        class_id: classId,
-        preferences: prefs,
-        additional_comments: comments.trim() || null,
-      });
+      const formattedPreferences = preferences
+        .filter(pref => pref.trim() !== "")
+        .map((name, index) => ({
+          name: name.trim(),
+          rank: index + 1
+        }));
+
+      const { error } = await supabase
+        .from("student_preferences")
+        .insert({
+          student_id: studentData.id,
+          class_id: studentData.class_id,
+          preferences: formattedPreferences,
+          additional_comments: comments.trim() || null,
+          status: 'pending'
+        });
 
       if (error) throw error;
 
@@ -99,6 +141,12 @@ const StudentPreferences = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Logged out successfully");
+    navigate("/student/login");
   };
 
   const updatePreference = (index: number, value: string) => {
@@ -116,14 +164,22 @@ const StudentPreferences = () => {
       <FloatingBubbles />
       
       <div className="max-w-2xl mx-auto relative z-10">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/student/login")}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+        <div className="flex justify-between items-center mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/student/login")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
 
         <Card className="shadow-[var(--shadow-glow)]">
           <CardHeader>

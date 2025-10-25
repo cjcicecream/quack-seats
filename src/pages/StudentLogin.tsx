@@ -1,24 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
 
 const StudentLogin = () => {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [classCode, setClassCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSignup, setIsSignup] = useState(true);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/student/preferences");
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Validate inputs
+      if (!name.trim() || !email.trim() || !password || !classCode.trim()) {
+        toast.error("Please fill in all fields");
+        setLoading(false);
+        return;
+      }
+
+      if (password.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        setLoading(false);
+        return;
+      }
+
       // Check if class exists
       const { data: classData, error: classError } = await supabase
         .from("classes")
@@ -38,39 +66,65 @@ const StudentLogin = () => {
         return;
       }
 
-      // Find or create student
-      const { data: studentData, error: studentError } = await supabase
-        .from("students")
-        .select("id")
-        .eq("class_id", classData.id)
-        .ilike("name", name.trim())
-        .maybeSingle();
+      // Create auth account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/student/preferences`,
+          data: {
+            name: name.trim(),
+            class_code: classCode.trim(),
+          }
+        }
+      });
 
-      let studentId = studentData?.id;
+      if (authError) throw authError;
 
-      if (!studentData) {
-        const { data: newStudent, error: createError } = await supabase
+      if (authData.user) {
+        // Create student profile
+        const { error: studentError } = await supabase
           .from("students")
           .insert({
+            auth_user_id: authData.user.id,
             class_id: classData.id,
             name: name.trim(),
-          })
-          .select("id")
-          .single();
+          });
 
-        if (createError) throw createError;
-        studentId = newStudent.id;
+        if (studentError) throw studentError;
+
+        toast.success("Account created! You can now submit your preferences.");
+        navigate("/student/preferences");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred during signup");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (!email.trim() || !password) {
+        toast.error("Please enter email and password");
+        setLoading(false);
+        return;
       }
 
-      // Store in sessionStorage
-      sessionStorage.setItem("student_id", studentId);
-      sessionStorage.setItem("class_id", classData.id);
-      sessionStorage.setItem("student_name", name.trim());
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
 
-      toast.success("Welcome!");
+      if (error) throw error;
+
+      toast.success("Welcome back!");
       navigate("/student/preferences");
     } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+      toast.error(error.message || "An error occurred during login");
     } finally {
       setLoading(false);
     }
@@ -90,41 +144,113 @@ const StudentLogin = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Your Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
+          <Tabs defaultValue="signup" className="w-full" onValueChange={(v) => setIsSignup(v === "signup")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="login">Login</TabsTrigger>
+            </TabsList>
             
-            <div className="space-y-2">
-              <Label htmlFor="classCode">Class Code</Label>
-              <Input
-                id="classCode"
-                type="text"
-                placeholder="Enter class code"
-                value={classCode}
-                onChange={(e) => setClassCode(e.target.value)}
-                required
-              />
-            </div>
+            <TabsContent value="signup">
+              <form onSubmit={handleSignup} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Your Name</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    placeholder="Enter your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="Create a password (min 6 characters)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="signup-classCode">Class Code</Label>
+                  <Input
+                    id="signup-classCode"
+                    type="text"
+                    placeholder="Enter class code from teacher"
+                    value={classCode}
+                    onChange={(e) => setClassCode(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  variant="playful" 
+                  size="lg"
+                  disabled={loading}
+                >
+                  {loading ? "Creating Account..." : "Create Account"}
+                </Button>
+              </form>
+            </TabsContent>
             
-            <Button 
-              type="submit" 
-              className="w-full" 
-              variant="playful" 
-              size="lg"
-              disabled={loading}
-            >
-              {loading ? "Loading..." : "Join Class"}
-            </Button>
-          </form>
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Password</Label>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  variant="playful" 
+                  size="lg"
+                  disabled={loading}
+                >
+                  {loading ? "Logging in..." : "Login"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
           
           <div className="mt-6 text-center space-y-3">
             <Button
