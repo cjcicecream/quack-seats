@@ -1,7 +1,7 @@
 const FloatingBubbles = () => {
-  const bubbles = Array.from({ length: 8 }, (_, i) => ({
+  const bubbles = Array.from({ length: 12 }, (_, i) => ({
     id: i,
-    size: Math.random() * 100 + 50,
+    size: Math.random() * 120 + 40,
     left: Math.random() * 100,
     delay: Math.random() * 10,
     duration: Math.random() * 10 + 15,
@@ -12,7 +12,7 @@ const FloatingBubbles = () => {
       {bubbles.map((bubble) => (
         <div
           key={bubble.id}
-          className="bubble"
+          className="soap-bubble"
           style={{
             width: `${bubble.size}px`,
             height: `${bubble.size}px`,
@@ -21,7 +21,9 @@ const FloatingBubbles = () => {
             animationDelay: `${bubble.delay}s`,
             animationDuration: `${bubble.duration}s`,
           }}
-        />
+        >
+          <div className="bubble-shine" />
+        </div>
       ))}
     </div>
   );
