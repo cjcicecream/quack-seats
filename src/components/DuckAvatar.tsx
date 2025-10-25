@@ -22,7 +22,7 @@ const DuckAvatar = ({ name, size = "md" }: DuckAvatarProps) => {
         className={`${sizes[size]} relative flex items-center justify-center`}
       >
         {/* Main body - bright yellow */}
-        <div className="absolute inset-0 bg-[#FFD93D] rounded-[50%_50%_45%_45%] border-2 border-[#4A4A4A]/20 shadow-[0_3px_6px_rgba(0,0,0,0.15)]" />
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-14 h-12 bg-[#FFD93D] rounded-[50%] border-2 border-[#4A4A4A]/20 shadow-[0_3px_6px_rgba(0,0,0,0.15)]" />
         
         {/* Wing circle detail */}
         <div className="absolute left-2 top-[48%] w-4 h-4 border-2 border-[#E6B800] rounded-full transform -translate-y-1/2" />
