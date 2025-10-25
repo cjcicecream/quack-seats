@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { GraduationCap, Users } from "lucide-react";
+import { GraduationCap, Users, Eye } from "lucide-react";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Home = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mt-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
           <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-8 shadow-[var(--shadow-glow)] border-2 border-primary/20 hover:border-primary/40 transition-all hover:scale-105">
             <GraduationCap className="w-16 h-16 mx-auto mb-4 text-primary" />
             <h2 className="text-2xl font-bold mb-3">Teachers</h2>
@@ -50,6 +50,22 @@ const Home = () => {
               onClick={() => navigate("/student/login")}
             >
               Student Login
+            </Button>
+          </div>
+
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-8 shadow-[var(--shadow-glow)] border-2 border-accent/20 hover:border-accent/40 transition-all hover:scale-105">
+            <Eye className="w-16 h-16 mx-auto mb-4 text-accent-foreground" />
+            <h2 className="text-2xl font-bold mb-3">Final Layout</h2>
+            <p className="text-muted-foreground mb-6">
+              View the final seating arrangement with all students
+            </p>
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => navigate("/student/final-view")}
+            >
+              View Seating Chart
             </Button>
           </div>
         </div>
