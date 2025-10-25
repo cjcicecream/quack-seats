@@ -24,9 +24,15 @@ const StudentLogin = () => {
         .from("classes")
         .select("id")
         .ilike("class_code", classCode.trim())
-        .single();
+        .maybeSingle();
 
-      if (classError || !classData) {
+      if (classError) {
+        toast.error("Error checking class code. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      if (!classData) {
         toast.error("Invalid class code. Please check with your teacher.");
         setLoading(false);
         return;
