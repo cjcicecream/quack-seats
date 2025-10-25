@@ -26,16 +26,29 @@ const TeacherDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkAuth();
-    loadClasses();
-  }, []);
+    // Check initial session
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/teacher/auth");
+      } else {
+        loadClasses();
+      }
+    };
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/teacher/auth");
-    }
-  };
+    checkAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/teacher/auth");
+      } else if (event === 'SIGNED_IN') {
+        loadClasses();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const loadClasses = async () => {
     try {
