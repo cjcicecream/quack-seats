@@ -210,7 +210,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_student_in_class: { Args: { _class_id: string }; Returns: boolean }
+      is_teacher_of_class: { Args: { _class_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
