@@ -21,35 +21,31 @@ const DuckAvatar = ({ name, size = "md" }: DuckAvatarProps) => {
       <div
         className={`${sizes[size]} relative flex items-center justify-center`}
       >
-        {/* Duck body */}
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 rounded-[45%_45%_40%_40%] shadow-lg" />
+        {/* Duck body - bright yellow with rounded bottom */}
+        <div className="absolute inset-0 bg-[#FFD93D] rounded-[50%_50%_48%_48%] shadow-[0_4px_8px_rgba(0,0,0,0.2),inset_-4px_-4px_8px_rgba(0,0,0,0.1)]" />
         
-        {/* Wing */}
-        <div className="absolute left-0 top-1/2 w-3 h-4 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-l-full transform -translate-y-1/4" />
+        {/* Wing circle */}
+        <div className="absolute left-1 top-[45%] w-5 h-5 border-2 border-[#F4A300] rounded-full" />
+        
+        {/* Head - slightly lighter yellow */}
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-[#FFE55C] rounded-full shadow-[inset_-2px_-2px_4px_rgba(0,0,0,0.1)]" />
         
         {/* Beak */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-2">
-          <div className="w-3 h-2 bg-gradient-to-br from-orange-400 to-orange-500 rounded-sm" />
+        <div className="absolute top-[30%] left-1/2 transform -translate-x-1/2 translate-x-2">
+          <div className="w-4 h-3 bg-gradient-to-b from-[#FF8C42] to-[#FF6B35] rounded-[2px_50%_50%_2px]" />
         </div>
         
         {/* Eyes */}
-        <div className="absolute top-1/3 left-1/3 transform -translate-x-1/2">
-          <div className="w-2 h-2 bg-white rounded-full flex items-center justify-center">
-            <div className="w-1 h-1 bg-gray-900 rounded-full" />
+        <div className="absolute top-[22%] left-[38%]">
+          <div className="w-2.5 h-2.5 bg-white rounded-full border border-gray-200 flex items-center justify-center shadow-sm">
+            <div className="w-1.5 h-1.5 bg-black rounded-full" />
           </div>
         </div>
-        <div className="absolute top-1/3 right-1/3 transform translate-x-1/2">
-          <div className="w-2 h-2 bg-white rounded-full flex items-center justify-center">
-            <div className="w-1 h-1 bg-gray-900 rounded-full" />
+        <div className="absolute top-[22%] right-[38%]">
+          <div className="w-2.5 h-2.5 bg-white rounded-full border border-gray-200 flex items-center justify-center shadow-sm">
+            <div className="w-1.5 h-1.5 bg-black rounded-full" />
           </div>
         </div>
-        
-        {/* Cheek blush */}
-        <div className="absolute top-1/2 left-1/4 w-2 h-1.5 bg-pink-300/60 rounded-full" />
-        <div className="absolute top-1/2 right-1/4 w-2 h-1.5 bg-pink-300/60 rounded-full" />
-        
-        {/* Water ripple effect at bottom */}
-        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-12 h-2 bg-blue-200/30 rounded-full blur-sm" />
       </div>
       
       <span className={`${textSizes[size]} font-medium text-foreground text-center max-w-[100px] truncate`}>
