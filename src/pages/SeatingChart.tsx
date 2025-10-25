@@ -126,7 +126,7 @@ const SeatingChart = () => {
         </div>
 
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          🐣Seating Chart🐣
+          🐣View Charts🐣
         </h1>
 
         {currentArrangement ? (
@@ -166,19 +166,42 @@ const SeatingChart = () => {
           </Card>
         )}
 
-        {arrangements.length > 1 && (
+        {arrangements.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">Past Arrangements</h2>
-            <div className="space-y-2">
-              {arrangements.slice(1).map((arr, index) => (
-                <Button
+            <h2 className="text-2xl font-bold mb-4">All Arrangements</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              {arrangements.map((arr, index) => (
+                <Card 
                   key={arr.id}
-                  variant="outline"
-                  className="w-full justify-start"
+                  className={`p-4 cursor-pointer transition-all hover:scale-105 ${
+                    currentArrangement === arr.arrangement 
+                      ? 'border-2 border-primary shadow-[var(--shadow-glow)]' 
+                      : 'border border-primary/30'
+                  }`}
                   onClick={() => setCurrentArrangement(arr.arrangement)}
                 >
-                  Arrangement from {new Date(arr.created_at).toLocaleDateString()}
-                </Button>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {index === 0 ? '🌟 Latest' : `#${arrangements.length - index}`}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {new Date(arr.created_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    {currentArrangement === arr.arrangement && (
+                      <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
+                        Viewing
+                      </span>
+                    )}
+                  </div>
+                </Card>
               ))}
             </div>
           </div>

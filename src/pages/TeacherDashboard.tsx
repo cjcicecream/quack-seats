@@ -184,7 +184,7 @@ const TeacherDashboard = () => {
                   onClick={() => navigate(`/teacher/class/${cls.id}/chart`)}
                 >
                   <Users className="mr-2 h-4 w-4" />
-                  Seating Chart
+                  View Charts
                 </Button>
               </CardContent>
             </Card>
