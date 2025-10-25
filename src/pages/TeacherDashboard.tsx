@@ -52,9 +52,17 @@ const TeacherDashboard = () => {
 
   const loadClasses = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/teacher/auth");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("classes")
         .select("*")
+        .eq("teacher_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
