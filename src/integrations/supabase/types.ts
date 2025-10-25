@@ -16,6 +16,9 @@ export type Database = {
     Tables: {
       classes: {
         Row: {
+          allow_avoid_students: boolean | null
+          allow_gender_preference: boolean | null
+          allow_seating_position: boolean | null
           class_code: string
           created_at: string | null
           id: string
@@ -24,6 +27,9 @@ export type Database = {
           teacher_id: string
         }
         Insert: {
+          allow_avoid_students?: boolean | null
+          allow_gender_preference?: boolean | null
+          allow_seating_position?: boolean | null
           class_code: string
           created_at?: string | null
           id?: string
@@ -32,6 +38,9 @@ export type Database = {
           teacher_id: string
         }
         Update: {
+          allow_avoid_students?: boolean | null
+          allow_gender_preference?: boolean | null
+          allow_seating_position?: boolean | null
           class_code?: string
           created_at?: string | null
           id?: string
