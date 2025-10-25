@@ -18,29 +18,15 @@ const StudentPreferences = () => {
   const navigate = useNavigate();
 
   const checkStudent = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const studentData = sessionStorage.getItem("student_data");
     
-    if (!session) {
-      toast.error("Please log in first");
+    if (!studentData) {
+      toast.error("Please join a class first");
       navigate("/student/login");
       return null;
     }
     
-    // Get student data
-    const { data: studentData, error } = await supabase
-      .from("students")
-      .select("id, class_id, name")
-      .eq("auth_user_id", session.user.id)
-      .maybeSingle();
-    
-    if (error || !studentData) {
-      await supabase.auth.signOut();
-      toast.error("Student profile not found. Please sign up with your class code.");
-      navigate("/student/login");
-      return null;
-    }
-    
-    return studentData;
+    return JSON.parse(studentData);
   };
 
   const loadPreviousPreferences = async (studentData: { id: string; class_id: string }) => {
@@ -97,24 +83,15 @@ const StudentPreferences = () => {
     setLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const studentData = sessionStorage.getItem("student_data");
       
-      if (!session) {
-        toast.error("Please log in first");
+      if (!studentData) {
+        toast.error("Please join a class first");
         navigate("/student/login");
         return;
       }
 
-      const { data: studentData } = await supabase
-        .from("students")
-        .select("id, class_id")
-        .eq("auth_user_id", session.user.id)
-        .maybeSingle();
-
-      if (!studentData) {
-        toast.error("Student profile not found");
-        return;
-      }
+      const student = JSON.parse(studentData);
 
       const formattedPreferences = preferences
         .filter(pref => pref.trim() !== "")
@@ -126,8 +103,8 @@ const StudentPreferences = () => {
       const { error } = await supabase
         .from("student_preferences")
         .insert({
-          student_id: studentData.id,
-          class_id: studentData.class_id,
+          student_id: student.id,
+          class_id: student.class_id,
           preferences: formattedPreferences,
           additional_comments: comments.trim() || null,
           status: 'pending'
@@ -144,8 +121,8 @@ const StudentPreferences = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    sessionStorage.removeItem("student_data");
     toast.success("Logged out successfully");
     navigate("/student/login");
   };

@@ -15,29 +15,17 @@ const StudentFinalView = () => {
   const navigate = useNavigate();
 
   const checkStudent = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      toast.error("Please log in first");
-      navigate("/student/login");
-      return null;
-    }
-    
-    const { data: studentData } = await supabase
-      .from("students")
-      .select("id, class_id, name")
-      .eq("auth_user_id", session.user.id)
-      .maybeSingle();
+    const studentData = sessionStorage.getItem("student_data");
     
     if (!studentData) {
-      await supabase.auth.signOut();
-      toast.error("Student profile not found. Please sign up with your class code.");
+      toast.error("Please join a class first");
       navigate("/student/login");
       return null;
     }
     
-    setStudentName(studentData.name);
-    return studentData;
+    const student = JSON.parse(studentData);
+    setStudentName(student.name);
+    return student;
   };
 
   const loadArrangement = async (classId: string) => {
@@ -89,8 +77,8 @@ const StudentFinalView = () => {
     return null;
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    sessionStorage.removeItem("student_data");
     toast.success("Logged out successfully");
     navigate("/student/login");
   };

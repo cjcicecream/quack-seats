@@ -5,44 +5,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
 
 const StudentLogin = () => {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [classCode, setClassCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSignup, setIsSignup] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/student/preferences");
-      }
-    };
-    checkAuth();
+    // Check if student info is already in session
+    const studentData = sessionStorage.getItem("student_data");
+    if (studentData) {
+      navigate("/student/preferences");
+    }
   }, [navigate]);
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       // Validate inputs
-      if (!name.trim() || !email.trim() || !password || !classCode.trim()) {
+      if (!name.trim() || !classCode.trim()) {
         toast.error("Please fill in all fields");
-        setLoading(false);
-        return;
-      }
-
-      if (password.length < 6) {
-        toast.error("Password must be at least 6 characters");
         setLoading(false);
         return;
       }
@@ -50,7 +37,7 @@ const StudentLogin = () => {
       // Check if class exists (convert to uppercase to match teacher's code format)
       const { data: classData, error: classError } = await supabase
         .from("classes")
-        .select("id")
+        .select("id, name")
         .eq("class_code", classCode.trim().toUpperCase())
         .maybeSingle();
 
@@ -66,79 +53,44 @@ const StudentLogin = () => {
         return;
       }
 
-      // Create auth account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/student/preferences`,
-          data: {
-            name: name.trim(),
-            class_code: classCode.trim(),
-          }
-        }
-      });
+      // Check if student already exists in this class (case-insensitive name match)
+      const { data: existingStudents } = await supabase
+        .from("students")
+        .select("*")
+        .eq("class_id", classData.id);
 
-      if (authError) throw authError;
+      let studentRecord = existingStudents?.find(
+        s => s.name.toLowerCase() === name.trim().toLowerCase()
+      );
 
-      if (authData.user) {
-        // Create student profile
-        const { error: studentError } = await supabase
+      // If student doesn't exist, create them
+      if (!studentRecord) {
+        const { data: newStudent, error: studentError } = await supabase
           .from("students")
           .insert({
-            auth_user_id: authData.user.id,
             class_id: classData.id,
             name: name.trim(),
-          });
+            auth_user_id: null
+          })
+          .select()
+          .single();
 
         if (studentError) throw studentError;
-
-        toast.success("Account created! You can now submit your preferences.");
-        navigate("/student/preferences");
-      }
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred during signup");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (!email.trim() || !password) {
-        toast.error("Please enter email and password");
-        setLoading(false);
-        return;
+        studentRecord = newStudent;
       }
 
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password,
-      });
+      // Store student data in session
+      sessionStorage.setItem("student_data", JSON.stringify({
+        id: studentRecord.id,
+        name: studentRecord.name,
+        class_id: classData.id,
+        class_name: classData.name
+      }));
 
-      if (error) throw error;
-
-      // Check if student profile exists
-      const { data: studentProfile } = await supabase
-        .from("students")
-        .select("id")
-        .eq("auth_user_id", authData.user.id)
-        .maybeSingle();
-
-      if (!studentProfile) {
-        await supabase.auth.signOut();
-        toast.error("No student profile found. Please sign up first with a class code.");
-        setLoading(false);
-        return;
-      }
-
-      toast.success("Welcome back!");
+      toast.success(`Welcome ${studentRecord.name}!`);
       navigate("/student/preferences");
     } catch (error: any) {
-      toast.error(error.message || "An error occurred during login");
+      toast.error(error.message || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -154,117 +106,45 @@ const StudentLogin = () => {
             🐣quack groups🐣
           </CardTitle>
           <CardDescription className="text-lg">
-            Student Login - Join your class!
+            Student Access - Join your class!
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signup" className="w-full" onValueChange={(v) => setIsSignup(v === "signup")}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              <TabsTrigger value="login">Login</TabsTrigger>
-            </TabsList>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Your Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
             
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Your Name</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Create a password (min 6 characters)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="signup-classCode">Class Code</Label>
-                  <Input
-                    id="signup-classCode"
-                    type="text"
-                    placeholder="Enter class code from teacher"
-                    value={classCode}
-                    onChange={(e) => setClassCode(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  variant="playful" 
-                  size="lg"
-                  disabled={loading}
-                >
-                  {loading ? "Creating Account..." : "Create Account"}
-                </Button>
-              </form>
-            </TabsContent>
+            <div className="space-y-2">
+              <Label htmlFor="classCode">Class Code</Label>
+              <Input
+                id="classCode"
+                type="text"
+                placeholder="Enter class code from teacher"
+                value={classCode}
+                onChange={(e) => setClassCode(e.target.value)}
+                required
+              />
+            </div>
             
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  variant="playful" 
-                  size="lg"
-                  disabled={loading}
-                >
-                  {loading ? "Logging in..." : "Login"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              variant="playful" 
+              size="lg"
+              disabled={loading}
+            >
+              {loading ? "Joining Class..." : "Join Class"}
+            </Button>
+          </form>
           
           <div className="mt-6 text-center space-y-3">
             <Button

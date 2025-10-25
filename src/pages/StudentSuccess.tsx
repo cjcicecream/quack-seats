@@ -6,7 +6,8 @@ import { CheckCircle } from "lucide-react";
 
 const StudentSuccess = () => {
   const navigate = useNavigate();
-  const studentName = sessionStorage.getItem("student_name");
+  const studentData = sessionStorage.getItem("student_data");
+  const studentName = studentData ? JSON.parse(studentData).name : "Student";
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
