@@ -144,8 +144,8 @@ const SeatingChart = () => {
                         {seat.student ? (
                           <PotatoAvatar name={seat.student.name} size="md" />
                         ) : (
-                          <div className="w-16 h-20 border-2 border-dashed border-muted rounded-lg flex items-center justify-center text-muted-foreground text-xs">
-                            Empty
+                          <div className="w-16 h-20 border-2 border-dashed border-muted rounded-lg flex items-center justify-center text-3xl">
+                            🦆
                           </div>
                         )}
                       </div>
