@@ -1,0 +1,191 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
+import FloatingBubbles from "@/components/FloatingBubbles";
+import PotatoAvatar from "@/components/PotatoAvatar";
+import { ArrowLeft, RefreshCw } from "lucide-react";
+
+interface Arrangement {
+  id: string;
+  arrangement: any;
+  created_at: string;
+}
+
+const SeatingChart = () => {
+  const { classId } = useParams();
+  const navigate = useNavigate();
+  const [arrangements, setArrangements] = useState<Arrangement[]>([]);
+  const [currentArrangement, setCurrentArrangement] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadArrangements();
+  }, [classId]);
+
+  const loadArrangements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("seating_arrangements")
+        .select("*")
+        .eq("class_id", classId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      setArrangements(data || []);
+      if (data && data.length > 0) {
+        setCurrentArrangement(data[0].arrangement);
+      }
+    } catch (error: any) {
+      toast.error("Failed to load seating arrangements");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateNewArrangement = async () => {
+    setLoading(true);
+    try {
+      // This is a simplified auto-generation
+      // In production, you'd want a more sophisticated algorithm
+      const { data: students } = await supabase
+        .from("students")
+        .select("*")
+        .eq("class_id", classId);
+
+      const { data: layout } = await supabase
+        .from("table_layouts")
+        .select("*")
+        .eq("class_id", classId)
+        .eq("is_active", true)
+        .single();
+
+      if (!students || !layout) {
+        toast.error("Please set up table layout and add students first");
+        setLoading(false);
+        return;
+      }
+
+      // Simple random arrangement
+      const shuffled = [...students].sort(() => Math.random() - 0.5);
+      const layoutData = layout.layout as any;
+      const tables = layoutData.tables || [];
+      
+      const arrangement = {
+        tables: tables.map((table: any, index: number) => ({
+          ...table,
+          seats: table.seats.map((seat: any, seatIndex: number) => {
+            const studentIndex = index * table.seats.length + seatIndex;
+            return {
+              ...seat,
+              student: shuffled[studentIndex] || null,
+            };
+          }),
+        })),
+      };
+
+      const { error } = await supabase
+        .from("seating_arrangements")
+        .insert({
+          class_id: classId,
+          arrangement,
+        });
+
+      if (error) throw error;
+      
+      toast.success("New seating arrangement generated!");
+      loadArrangements();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate arrangement");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && arrangements.length === 0) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  return (
+    <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
+      <FloatingBubbles />
+      
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="flex justify-between items-center mb-6">
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          <Button variant="playful" onClick={generateNewArrangement} disabled={loading}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Generate New
+          </Button>
+        </div>
+
+        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          🐣Seating Chart🐣
+        </h1>
+
+        {currentArrangement ? (
+          <Card className="p-8 shadow-[var(--shadow-glow)]">
+            <div className="grid gap-8">
+              {currentArrangement.tables?.map((table: any, tableIndex: number) => (
+                <div
+                  key={tableIndex}
+                  className="border-2 border-primary/30 rounded-lg p-6 bg-card/50"
+                >
+                  <h3 className="text-lg font-semibold mb-4">Table {tableIndex + 1}</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {table.seats?.map((seat: any, seatIndex: number) => (
+                      <div key={seatIndex} className="flex justify-center">
+                        {seat.student ? (
+                          <PotatoAvatar name={seat.student.name} size="md" />
+                        ) : (
+                          <div className="w-16 h-20 border-2 border-dashed border-muted rounded-lg flex items-center justify-center text-muted-foreground text-xs">
+                            Empty
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        ) : (
+          <Card className="p-12 text-center">
+            <p className="text-muted-foreground text-lg mb-4">
+              No seating arrangement yet
+            </p>
+            <Button variant="playful" onClick={generateNewArrangement}>
+              Generate First Arrangement
+            </Button>
+          </Card>
+        )}
+
+        {arrangements.length > 1 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Past Arrangements</h2>
+            <div className="space-y-2">
+              {arrangements.slice(1).map((arr, index) => (
+                <Button
+                  key={arr.id}
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setCurrentArrangement(arr.arrangement)}
+                >
+                  Arrangement from {new Date(arr.created_at).toLocaleDateString()}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SeatingChart;
