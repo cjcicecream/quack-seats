@@ -120,10 +120,17 @@ const StudentLogin = () => {
             </Button>
           </form>
           
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/student/final-view")}
+            >
+              View Final Seating Chart
+            </Button>
             <a
               href="/"
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="block text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               ← Back to home
             </a>

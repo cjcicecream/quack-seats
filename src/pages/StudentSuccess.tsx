@@ -35,13 +35,21 @@ const StudentSuccess = () => {
               variant="playful"
               size="lg"
               className="w-full"
+              onClick={() => navigate("/student/final-view")}
+            >
+              View Final Seating Chart
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={() => navigate("/student/preferences")}
             >
               Update Preferences
             </Button>
             
             <Button
-              variant="outline"
+              variant="ghost"
               className="w-full"
               onClick={() => navigate("/")}
             >

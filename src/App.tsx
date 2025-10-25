@@ -9,6 +9,7 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentLogin from "./pages/StudentLogin";
 import StudentPreferences from "./pages/StudentPreferences";
 import StudentSuccess from "./pages/StudentSuccess";
+import StudentFinalView from "./pages/StudentFinalView";
 import SeatingChart from "./pages/SeatingChart";
 import TableLayout from "./pages/TableLayout";
 import ManagePreferences from "./pages/ManagePreferences";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/student/login" element={<StudentLogin />} />
           <Route path="/student/preferences" element={<StudentPreferences />} />
           <Route path="/student/success" element={<StudentSuccess />} />
+          <Route path="/student/final-view" element={<StudentFinalView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
