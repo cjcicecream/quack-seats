@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { Plus, LayoutGrid, Users, ClipboardList } from "lucide-react";
+import { Plus, LayoutGrid, Users, ClipboardList, Copy } from "lucide-react";
 
 interface Class {
   id: string;
@@ -146,8 +146,19 @@ const TeacherDashboard = () => {
             <Card key={cls.id} className="shadow-[var(--shadow-glow)] hover:scale-105 transition-transform">
               <CardHeader>
                 <CardTitle>{cls.name}</CardTitle>
-                <CardDescription>
-                  Code: <span className="font-mono font-bold text-primary">{cls.class_code}</span>
+                <CardDescription className="flex items-center gap-2">
+                  <span>Code: <span className="font-mono font-bold text-primary">{cls.class_code}</span></span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => {
+                      navigator.clipboard.writeText(cls.class_code);
+                      toast.success("Class code copied to clipboard!");
+                    }}
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
