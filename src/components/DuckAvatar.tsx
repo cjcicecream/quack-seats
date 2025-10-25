@@ -21,24 +21,41 @@ const DuckAvatar = ({ name, size = "md" }: DuckAvatarProps) => {
       <div
         className={`${sizes[size]} relative flex items-center justify-center`}
       >
-        {/* Main body - bright yellow */}
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-14 h-12 bg-[#FFD93D] rounded-[50%] border-2 border-[#4A4A4A]/20 shadow-[0_3px_6px_rgba(0,0,0,0.15)]" />
+        {/* Main body - organic rounded shape */}
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-14 h-14 bg-gradient-to-b from-[#FFD93D] to-[#FFC700] rounded-[45%_55%_50%_50%/55%_60%_45%_50%] border-2 border-[#E6B800] shadow-[0_4px_8px_rgba(0,0,0,0.2),inset_0_-2px_4px_rgba(230,184,0,0.3)]" />
         
-        {/* Wing circle detail */}
-        <div className="absolute left-2 top-[48%] w-4 h-4 border-2 border-[#E6B800] rounded-full transform -translate-y-1/2" />
+        {/* Body highlight */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-6 bg-white/20 rounded-[50%] blur-[2px]" />
         
-        {/* Head - round circle on top */}
-        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-9 h-9 bg-[#FFD93D] rounded-full border-2 border-[#4A4A4A]/20" />
+        {/* Wing - curved organic shape */}
+        <div className="absolute left-2 top-[50%] transform -translate-y-1/2 w-5 h-7 bg-[#E6B800] rounded-[60%_40%_40%_60%/50%_50%_50%_50%] opacity-40" />
         
-        {/* Eye - single black dot */}
-        <div className="absolute top-[18%] left-[45%]">
-          <div className="w-2 h-2 bg-black rounded-full" />
+        {/* Head - organic rounded shape */}
+        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-gradient-to-b from-[#FFD93D] to-[#FFC700] rounded-[48%_52%_50%_50%/52%_48%_52%_48%] border-2 border-[#E6B800] shadow-[0_2px_4px_rgba(0,0,0,0.15)]" />
+        
+        {/* Head highlight */}
+        <div className="absolute top-1 left-[48%] w-3 h-3 bg-white/30 rounded-full blur-[1px]" />
+        
+        {/* Eye white */}
+        <div className="absolute top-[22%] left-[42%] w-3 h-3 bg-white rounded-full" />
+        
+        {/* Eye pupil */}
+        <div className="absolute top-[23%] left-[43%] w-2 h-2 bg-black rounded-full">
+          <div className="absolute top-0 right-0 w-1 h-1 bg-white/60 rounded-full" />
         </div>
         
-        {/* Beak - orange pointing right */}
-        <div className="absolute top-[28%] right-[20%]">
-          <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-[#FF8C42] border-b-[5px] border-b-transparent" />
+        {/* Beak - 3D curved beak */}
+        <div className="absolute top-[32%] right-[18%]">
+          <div className="relative w-6 h-4">
+            {/* Top beak */}
+            <div className="absolute top-0 left-0 w-5 h-2 bg-gradient-to-r from-[#FF8C42] to-[#FF7420] rounded-[50%_80%_30%_50%] shadow-[0_1px_2px_rgba(0,0,0,0.2)]" />
+            {/* Bottom beak */}
+            <div className="absolute top-1 left-0 w-4 h-2 bg-gradient-to-r from-[#FF7420] to-[#FF6810] rounded-[50%_70%_40%_50%] shadow-[0_1px_2px_rgba(0,0,0,0.15)]" />
+          </div>
         </div>
+        
+        {/* Tail feathers */}
+        <div className="absolute -right-1 top-[55%] w-3 h-4 bg-[#E6B800] rounded-[30%_70%_70%_30%] opacity-50 transform rotate-12" />
       </div>
       
       <span className={`${textSizes[size]} font-medium text-foreground text-center max-w-[100px] truncate`}>
