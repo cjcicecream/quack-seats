@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { Plus, LogOut, LayoutGrid, Users, ClipboardList } from "lucide-react";
+import { Plus, LayoutGrid, Users, ClipboardList } from "lucide-react";
 
 interface Class {
   id: string;
@@ -79,28 +79,20 @@ const TeacherDashboard = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
+    <div className="p-4 md:p-8 relative overflow-hidden">
       <FloatingBubbles />
       
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            🐣quack groups🐣
+            My Classes
           </h1>
-          <Button variant="ghost" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
         </div>
 
         <div className="mb-6">

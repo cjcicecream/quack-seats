@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { TeacherLayout } from "./components/TeacherLayout";
 import Home from "./pages/Home";
 import TeacherAuth from "./pages/TeacherAuth";
 import TeacherDashboard from "./pages/TeacherDashboard";
@@ -26,10 +27,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/teacher/auth" element={<TeacherAuth />} />
-          <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-          <Route path="/teacher/class/:classId/layout" element={<TableLayout />} />
-          <Route path="/teacher/class/:classId/preferences" element={<ManagePreferences />} />
-          <Route path="/teacher/class/:classId/chart" element={<SeatingChart />} />
+          <Route path="/teacher/dashboard" element={<TeacherLayout><TeacherDashboard /></TeacherLayout>} />
+          <Route path="/teacher/class/:classId/layout" element={<TeacherLayout><TableLayout /></TeacherLayout>} />
+          <Route path="/teacher/class/:classId/preferences" element={<TeacherLayout><ManagePreferences /></TeacherLayout>} />
+          <Route path="/teacher/class/:classId/chart" element={<TeacherLayout><SeatingChart /></TeacherLayout>} />
           <Route path="/student/login" element={<StudentLogin />} />
           <Route path="/student/preferences" element={<StudentPreferences />} />
           <Route path="/student/success" element={<StudentSuccess />} />
