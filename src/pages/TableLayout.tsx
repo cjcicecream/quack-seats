@@ -20,7 +20,7 @@ const TableLayout = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
   const [tables, setTables] = useState<Table[]>([]);
-  const [newTableSeats, setNewTableSeats] = useState(4);
+  const [newTableSeats, setNewTableSeats] = useState(1);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -136,7 +136,7 @@ const TableLayout = () => {
                   min="1"
                   max="12"
                   value={newTableSeats}
-                  onChange={(e) => setNewTableSeats(parseInt(e.target.value) || 4)}
+                  onChange={(e) => setNewTableSeats(parseInt(e.target.value) || 1)}
                 />
               </div>
               <Button variant="playful" className="w-full" onClick={addTable}>
@@ -176,7 +176,7 @@ const TableLayout = () => {
                             max="12"
                             value={table.seats}
                             onChange={(e) =>
-                              updateTableSeats(table.id, parseInt(e.target.value) || 4)
+                              updateTableSeats(table.id, parseInt(e.target.value) || 1)
                             }
                             className="w-20"
                           />
