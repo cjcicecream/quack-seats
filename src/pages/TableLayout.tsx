@@ -187,7 +187,7 @@ const TableLayout = () => {
                               key={i}
                               className="w-8 h-8 rounded-full bg-secondary/40 border-2 border-secondary flex items-center justify-center text-lg"
                             >
-                              🦆
+                              🐥
                             </div>
                           ))}
                         </div>
