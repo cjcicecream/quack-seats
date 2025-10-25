@@ -31,7 +31,7 @@ const StudentPreferences = () => {
       .from("students")
       .select("id, class_id, name")
       .eq("auth_user_id", session.user.id)
-      .single();
+      .maybeSingle();
     
     if (error || !studentData) {
       toast.error("Student profile not found");
@@ -108,7 +108,7 @@ const StudentPreferences = () => {
         .from("students")
         .select("id, class_id")
         .eq("auth_user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
       if (!studentData) {
         toast.error("Student profile not found");

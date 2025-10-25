@@ -27,7 +27,7 @@ const StudentFinalView = () => {
       .from("students")
       .select("id, class_id, name")
       .eq("auth_user_id", session.user.id)
-      .single();
+      .maybeSingle();
     
     if (!studentData) {
       toast.error("Student profile not found");
