@@ -47,11 +47,11 @@ const StudentLogin = () => {
         return;
       }
 
-      // Check if class exists
+      // Check if class exists (convert to uppercase to match teacher's code format)
       const { data: classData, error: classError } = await supabase
         .from("classes")
         .select("id")
-        .ilike("class_code", classCode.trim())
+        .eq("class_code", classCode.trim().toUpperCase())
         .maybeSingle();
 
       if (classError) {
