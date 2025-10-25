@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, Trash2 } from "lucide-react";
 
 interface Preference {
   id: string;
@@ -62,6 +62,26 @@ const ManagePreferences = () => {
     }
   };
 
+  const deletePreference = async (id: string, studentName: string) => {
+    if (!confirm(`Are you sure you want to delete ${studentName}'s preferences?`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("student_preferences")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      toast.success("Preference deleted successfully");
+      loadPreferences();
+    } catch (error: any) {
+      toast.error("Failed to delete preference");
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -106,26 +126,35 @@ const ManagePreferences = () => {
                         )}
                       </CardDescription>
                     </div>
-                    {pref.status === "pending" && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => updateStatus(pref.id, "approved")}
-                        >
-                          <CheckCircle className="mr-1 h-4 w-4" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => updateStatus(pref.id, "declined")}
-                        >
-                          <XCircle className="mr-1 h-4 w-4" />
-                          Decline
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex gap-2">
+                      {pref.status === "pending" && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => updateStatus(pref.id, "approved")}
+                          >
+                            <CheckCircle className="mr-1 h-4 w-4" />
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => updateStatus(pref.id, "declined")}
+                          >
+                            <XCircle className="mr-1 h-4 w-4" />
+                            Decline
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => deletePreference(pref.id, pref.students.name)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
