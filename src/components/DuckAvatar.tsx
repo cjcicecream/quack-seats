@@ -21,30 +21,23 @@ const DuckAvatar = ({ name, size = "md" }: DuckAvatarProps) => {
       <div
         className={`${sizes[size]} relative flex items-center justify-center`}
       >
-        {/* Duck body - bright yellow with rounded bottom */}
-        <div className="absolute inset-0 bg-[#FFD93D] rounded-[50%_50%_48%_48%] shadow-[0_4px_8px_rgba(0,0,0,0.2),inset_-4px_-4px_8px_rgba(0,0,0,0.1)]" />
+        {/* Main body - bright yellow */}
+        <div className="absolute inset-0 bg-[#FFD93D] rounded-[50%_50%_45%_45%] border-2 border-[#4A4A4A]/20 shadow-[0_3px_6px_rgba(0,0,0,0.15)]" />
         
-        {/* Wing circle */}
-        <div className="absolute left-1 top-[45%] w-5 h-5 border-2 border-[#F4A300] rounded-full" />
+        {/* Wing circle detail */}
+        <div className="absolute left-2 top-[48%] w-4 h-4 border-2 border-[#E6B800] rounded-full transform -translate-y-1/2" />
         
-        {/* Head - slightly lighter yellow */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-[#FFE55C] rounded-full shadow-[inset_-2px_-2px_4px_rgba(0,0,0,0.1)]" />
+        {/* Head - round circle on top */}
+        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-9 h-9 bg-[#FFD93D] rounded-full border-2 border-[#4A4A4A]/20" />
         
-        {/* Beak */}
-        <div className="absolute top-[30%] left-1/2 transform -translate-x-1/2 translate-x-2">
-          <div className="w-4 h-3 bg-gradient-to-b from-[#FF8C42] to-[#FF6B35] rounded-[2px_50%_50%_2px]" />
+        {/* Eye - single black dot */}
+        <div className="absolute top-[18%] left-[45%]">
+          <div className="w-2 h-2 bg-black rounded-full" />
         </div>
         
-        {/* Eyes */}
-        <div className="absolute top-[22%] left-[38%]">
-          <div className="w-2.5 h-2.5 bg-white rounded-full border border-gray-200 flex items-center justify-center shadow-sm">
-            <div className="w-1.5 h-1.5 bg-black rounded-full" />
-          </div>
-        </div>
-        <div className="absolute top-[22%] right-[38%]">
-          <div className="w-2.5 h-2.5 bg-white rounded-full border border-gray-200 flex items-center justify-center shadow-sm">
-            <div className="w-1.5 h-1.5 bg-black rounded-full" />
-          </div>
+        {/* Beak - orange pointing right */}
+        <div className="absolute top-[28%] right-[20%]">
+          <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-[#FF8C42] border-b-[5px] border-b-transparent" />
         </div>
       </div>
       
