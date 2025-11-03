@@ -1,15 +1,13 @@
-import potatoImage from "@/assets/potato.png";
-
 interface DuckAvatarProps {
   name: string;
   size?: "sm" | "md" | "lg";
 }
 
 const DuckAvatar = ({ name, size = "md" }: DuckAvatarProps) => {
-  const sizes = {
-    sm: "w-16 h-16",
-    md: "w-20 h-20",
-    lg: "w-24 h-24",
+  const emojiSizes = {
+    sm: "text-4xl",
+    md: "text-5xl",
+    lg: "text-6xl",
   };
 
   const textSizes = {
@@ -20,12 +18,8 @@ const DuckAvatar = ({ name, size = "md" }: DuckAvatarProps) => {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className={`${sizes[size]} relative flex items-center justify-center`}>
-        <img 
-          src={potatoImage} 
-          alt="Potato" 
-          className="w-full h-full object-contain"
-        />
+      <div className="flex items-center justify-center">
+        <span className={emojiSizes[size]}>🥔</span>
       </div>
       
       <span className={`${textSizes[size]} font-medium text-foreground text-center max-w-[100px] truncate`}>
