@@ -289,9 +289,9 @@ const StudentPreferences = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No preference</SelectItem>
-                      <SelectItem value="same">Same gender</SelectItem>
-                      <SelectItem value="different">Different gender</SelectItem>
-                      <SelectItem value="mixed">Mixed group</SelectItem>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
