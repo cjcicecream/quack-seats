@@ -77,10 +77,6 @@ const TeacherPreferences = () => {
     <TeacherLayout>
       <div className="p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Your Preferences: {className}
-          </h1>
-
           <Card className="shadow-[var(--shadow-glow)]">
             <CardHeader>
               <CardTitle>Seating Arrangement Preferences</CardTitle>
@@ -89,8 +85,8 @@ const TeacherPreferences = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between space-x-4 py-3 border-b">
-                <div className="space-y-0.5">
+              <div className="flex items-start justify-between gap-4 py-3 border-b">
+                <div className="space-y-0.5 flex-1 min-w-0">
                   <Label htmlFor="prioritize">Prioritize Student Requests</Label>
                   <p className="text-sm text-muted-foreground">
                     Try to honor student seating preferences when possible
@@ -102,11 +98,12 @@ const TeacherPreferences = () => {
                   onCheckedChange={(checked) => 
                     setPreferences({ ...preferences, prioritize_student_requests: checked })
                   }
+                  className="shrink-0"
                 />
               </div>
 
-              <div className="flex items-center justify-between space-x-4 py-3 border-b">
-                <div className="space-y-0.5">
+              <div className="flex items-start justify-between gap-4 py-3 border-b">
+                <div className="space-y-0.5 flex-1 min-w-0">
                   <Label htmlFor="avoidGroups">Avoid Large Friend Groups</Label>
                   <p className="text-sm text-muted-foreground">
                     Prevent too many friends from sitting together at one table
@@ -118,11 +115,12 @@ const TeacherPreferences = () => {
                   onCheckedChange={(checked) => 
                     setPreferences({ ...preferences, avoid_large_groups: checked })
                   }
+                  className="shrink-0"
                 />
               </div>
 
-              <div className="flex items-center justify-between space-x-4 py-3 border-b">
-                <div className="space-y-0.5">
+              <div className="flex items-start justify-between gap-4 py-3 border-b">
+                <div className="space-y-0.5 flex-1 min-w-0">
                   <Label htmlFor="balance">Balance Personalities</Label>
                   <p className="text-sm text-muted-foreground">
                     Mix different types of students (quiet/outgoing, strong/struggling)
@@ -134,11 +132,12 @@ const TeacherPreferences = () => {
                   onCheckedChange={(checked) => 
                     setPreferences({ ...preferences, balance_personalities: checked })
                   }
+                  className="shrink-0"
                 />
               </div>
 
-              <div className="flex items-center justify-between space-x-4 py-3 border-b">
-                <div className="space-y-0.5">
+              <div className="flex items-start justify-between gap-4 py-3 border-b">
+                <div className="space-y-0.5 flex-1 min-w-0">
                   <Label htmlFor="separate">Separate Disruptive Pairs</Label>
                   <p className="text-sm text-muted-foreground">
                     Keep certain student combinations apart based on "avoid" preferences
@@ -150,6 +149,7 @@ const TeacherPreferences = () => {
                   onCheckedChange={(checked) => 
                     setPreferences({ ...preferences, separate_disruptive: checked })
                   }
+                  className="shrink-0"
                 />
               </div>
 
