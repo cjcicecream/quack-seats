@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { FileEdit, Eye, LogOut } from "lucide-react";
+import { FileEdit, LogOut } from "lucide-react";
 
 const StudentHome = () => {
   const [studentName, setStudentName] = useState("");
@@ -63,8 +63,8 @@ const StudentHome = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="p-8 shadow-[var(--shadow-glow)] border-2 border-primary/20 hover:border-primary/40 transition-all hover:scale-105 cursor-pointer"
+          <div className="flex justify-center">
+            <Card className="p-8 shadow-[var(--shadow-glow)] border-2 border-primary/20 hover:border-primary/40 transition-all hover:scale-105 cursor-pointer max-w-md w-full"
               onClick={() => navigate("/student/preferences")}
             >
               <div className="text-center space-y-4">
@@ -80,26 +80,6 @@ const StudentHome = () => {
                   onClick={() => navigate("/student/preferences")}
                 >
                   Go to Preferences
-                </Button>
-              </div>
-            </Card>
-
-            <Card className="p-8 shadow-[var(--shadow-glow)] border-2 border-secondary/20 hover:border-secondary/40 transition-all hover:scale-105 cursor-pointer"
-              onClick={() => navigate("/student/final-view")}
-            >
-              <div className="text-center space-y-4">
-                <Eye className="w-16 h-16 mx-auto text-secondary" />
-                <h2 className="text-2xl font-bold">View Seating Chart</h2>
-                <p className="text-muted-foreground">
-                  Check out the final seating arrangement!
-                </p>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
-                  onClick={() => navigate("/student/final-view")}
-                >
-                  View Chart
                 </Button>
               </div>
             </Card>
