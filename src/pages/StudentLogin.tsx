@@ -120,16 +120,16 @@ const StudentLogin = () => {
             <div className="space-y-2">
               <Label htmlFor="name">Your Name</Label>
               <p className="text-sm text-muted-foreground">
-                Please enter your first and last initial (e.g., JD for John Doe)
+                Please enter your first name and last initial (e.g., John D)
               </p>
               <Input
                 id="name"
                 type="text"
-                placeholder="e.g., JD"
+                placeholder="e.g., John D"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                maxLength={10}
+                maxLength={50}
               />
             </div>
             
