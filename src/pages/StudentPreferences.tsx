@@ -164,7 +164,7 @@ const StudentPreferences = () => {
         <Card className="shadow-[var(--shadow-glow)]">
           <CardHeader>
             <CardTitle className="text-3xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              🐣quack groups🐣
+              🥔potato groups🥔
             </CardTitle>
             {className && (
               <div className="text-xl font-semibold text-foreground mt-2">

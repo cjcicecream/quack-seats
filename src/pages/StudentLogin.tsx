@@ -103,7 +103,7 @@ const StudentLogin = () => {
       <Card className="w-full max-w-md relative z-10 shadow-[var(--shadow-glow)]">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            🐣quack groups🐣
+            🥔potato groups🥔
           </CardTitle>
           <CardDescription className="text-lg">
             Student Access - Join your class!
