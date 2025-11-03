@@ -139,7 +139,6 @@ const StudentLogin = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                maxLength={50}
               />
             </div>
             
