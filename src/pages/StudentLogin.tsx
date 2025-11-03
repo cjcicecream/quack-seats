@@ -18,7 +18,7 @@ const StudentLogin = () => {
     // Check if student info is already in session
     const studentData = sessionStorage.getItem("student_data");
     if (studentData) {
-      navigate("/student/preferences");
+      navigate("/student/home");
     }
   }, [navigate]);
 
@@ -94,7 +94,7 @@ const StudentLogin = () => {
       }));
 
       toast.success(`Welcome ${studentRecord.name}!`);
-      navigate("/student/preferences");
+      navigate("/student/home");
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
     } finally {
@@ -166,14 +166,7 @@ const StudentLogin = () => {
             </Button>
           </form>
           
-          <div className="mt-6 text-center space-y-3">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate("/student/final-view")}
-            >
-              View Final Seating Chart
-            </Button>
+          <div className="mt-6 text-center">
             <a
               href="/"
               className="block text-sm text-muted-foreground hover:text-primary transition-colors"

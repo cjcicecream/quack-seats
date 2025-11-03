@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import TeacherAuth from "./pages/TeacherAuth";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentLogin from "./pages/StudentLogin";
+import StudentHome from "./pages/StudentHome";
 import StudentPreferences from "./pages/StudentPreferences";
 import StudentSuccess from "./pages/StudentSuccess";
 import StudentFinalView from "./pages/StudentFinalView";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/teacher/class/:classId/manage-prefs" element={<TeacherLayout><ManagePreferences /></TeacherLayout>} />
           <Route path="/teacher/class/:classId/chart" element={<TeacherLayout><SeatingChart /></TeacherLayout>} />
           <Route path="/student/login" element={<StudentLogin />} />
+          <Route path="/student/home" element={<StudentHome />} />
           <Route path="/student/preferences" element={<StudentPreferences />} />
           <Route path="/student/success" element={<StudentSuccess />} />
           <Route path="/student/final-view" element={<StudentFinalView />} />
