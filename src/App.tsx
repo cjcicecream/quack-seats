@@ -15,6 +15,7 @@ import SeatingChart from "./pages/SeatingChart";
 import TableLayout from "./pages/TableLayout";
 import ManagePreferences from "./pages/ManagePreferences";
 import ClassSettings from "./pages/ClassSettings";
+import TeacherPreferences from "./pages/TeacherPreferences";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,8 +31,9 @@ const App = () => (
           <Route path="/teacher/auth" element={<TeacherAuth />} />
           <Route path="/teacher/dashboard" element={<TeacherLayout><TeacherDashboard /></TeacherLayout>} />
           <Route path="/teacher/class/:classId/settings" element={<TeacherLayout><ClassSettings /></TeacherLayout>} />
+          <Route path="/teacher/class/:classId/preferences" element={<TeacherLayout><TeacherPreferences /></TeacherLayout>} />
           <Route path="/teacher/class/:classId/layout" element={<TeacherLayout><TableLayout /></TeacherLayout>} />
-          <Route path="/teacher/class/:classId/preferences" element={<TeacherLayout><ManagePreferences /></TeacherLayout>} />
+          <Route path="/teacher/class/:classId/manage-prefs" element={<TeacherLayout><ManagePreferences /></TeacherLayout>} />
           <Route path="/teacher/class/:classId/chart" element={<TeacherLayout><SeatingChart /></TeacherLayout>} />
           <Route path="/student/login" element={<StudentLogin />} />
           <Route path="/student/preferences" element={<StudentPreferences />} />

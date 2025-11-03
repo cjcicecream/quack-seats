@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
@@ -16,6 +17,14 @@ const StudentPreferences = () => {
   const [maxPreferences, setMaxPreferences] = useState(3);
   const [className, setClassName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [classSettings, setClassSettings] = useState({
+    allow_gender_preference: false,
+    allow_seating_position: false,
+    allow_avoid_students: false
+  });
+  const [genderPreference, setGenderPreference] = useState("");
+  const [seatingPosition, setSeatingPosition] = useState("");
+  const [avoidStudents, setAvoidStudents] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const checkStudent = async () => {
@@ -32,17 +41,27 @@ const StudentPreferences = () => {
 
   const loadPreviousPreferences = async (studentData: { id: string; class_id: string }) => {
     try {
-      // Get max preferences and class name from class
+      // Get class settings and data
       const { data: classData } = await supabase
         .from("classes")
-        .select("max_preferences, name")
+        .select("max_preferences, name, allow_gender_preference, allow_seating_position, allow_avoid_students")
         .eq("id", studentData.class_id)
         .single();
 
       if (classData) {
         setMaxPreferences(classData.max_preferences);
         setClassName(classData.name);
+        setClassSettings({
+          allow_gender_preference: classData.allow_gender_preference || false,
+          allow_seating_position: classData.allow_seating_position || false,
+          allow_avoid_students: classData.allow_avoid_students || false
+        });
         setPreferences(Array(classData.max_preferences).fill(""));
+        
+        // Initialize avoid students array if enabled
+        if (classData.allow_avoid_students) {
+          setAvoidStudents(Array(Math.min(2, classData.max_preferences)).fill(""));
+        }
       }
 
       // Get previous preferences if any
@@ -56,11 +75,22 @@ const StudentPreferences = () => {
         .maybeSingle();
 
       if (prefData) {
-        const prefs = prefData.preferences as Array<{ name: string; rank: number }>;
-        const sortedPrefs = prefs.sort((a, b) => a.rank - b.rank);
-        const names = sortedPrefs.map(p => p.name);
+        const prefs = prefData.preferences as any;
         
-        setPreferences([...names, ...Array(Math.max(0, (classData?.max_preferences || 3) - names.length)).fill("")]);
+        // Load seating preferences
+        if (prefs.students) {
+          const sortedPrefs = prefs.students.sort((a: any, b: any) => a.rank - b.rank);
+          const names = sortedPrefs.map((p: any) => p.name);
+          setPreferences([...names, ...Array(Math.max(0, (classData?.max_preferences || 3) - names.length)).fill("")]);
+        }
+        
+        // Load other preferences
+        if (prefs.gender) setGenderPreference(prefs.gender);
+        if (prefs.seating_position) setSeatingPosition(prefs.seating_position);
+        if (prefs.avoid_students) {
+          setAvoidStudents([...prefs.avoid_students, ...Array(Math.max(0, 2 - prefs.avoid_students.length)).fill("")]);
+        }
+        
         setComments(prefData.additional_comments || "");
       }
     } catch (error: any) {
@@ -95,12 +125,27 @@ const StudentPreferences = () => {
 
       const student = JSON.parse(studentData);
 
-      const formattedPreferences = preferences
-        .filter(pref => pref.trim() !== "")
-        .map((name, index) => ({
-          name: name.trim(),
-          rank: index + 1
-        }));
+      const formattedPreferences: any = {
+        students: preferences
+          .filter(pref => pref.trim() !== "")
+          .map((name, index) => ({
+            name: name.trim(),
+            rank: index + 1
+          }))
+      };
+
+      // Add optional preferences based on class settings
+      if (classSettings.allow_gender_preference && genderPreference) {
+        formattedPreferences.gender = genderPreference;
+      }
+      
+      if (classSettings.allow_seating_position && seatingPosition) {
+        formattedPreferences.seating_position = seatingPosition;
+      }
+      
+      if (classSettings.allow_avoid_students) {
+        formattedPreferences.avoid_students = avoidStudents.filter(s => s.trim() !== "");
+      }
 
       const { error } = await supabase
         .from("student_preferences")
@@ -133,6 +178,12 @@ const StudentPreferences = () => {
     const newPrefs = [...preferences];
     newPrefs[index] = value;
     setPreferences(newPrefs);
+  };
+
+  const updateAvoidStudent = (index: number, value: string) => {
+    const newAvoid = [...avoidStudents];
+    newAvoid[index] = value;
+    setAvoidStudents(newAvoid);
   };
 
   if (loading) {
@@ -178,6 +229,7 @@ const StudentPreferences = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
+                <h3 className="font-semibold text-lg">Students You'd Like to Sit With</h3>
                 {preferences.map((pref, index) => (
                   <div key={index} className="space-y-2">
                     <Label htmlFor={`pref-${index}`}>
@@ -194,7 +246,66 @@ const StudentPreferences = () => {
                 ))}
               </div>
 
-              <div className="space-y-2">
+              {classSettings.allow_gender_preference && (
+                <div className="space-y-2 pt-4 border-t">
+                  <Label htmlFor="gender">Gender Preference (Optional)</Label>
+                  <Select value={genderPreference} onValueChange={setGenderPreference}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No preference" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No preference</SelectItem>
+                      <SelectItem value="same">Same gender</SelectItem>
+                      <SelectItem value="different">Different gender</SelectItem>
+                      <SelectItem value="mixed">Mixed group</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {classSettings.allow_seating_position && (
+                <div className="space-y-2 pt-4 border-t">
+                  <Label htmlFor="position">Seating Position Preference (Optional)</Label>
+                  <Select value={seatingPosition} onValueChange={setSeatingPosition}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No preference" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No preference</SelectItem>
+                      <SelectItem value="front">Front of classroom</SelectItem>
+                      <SelectItem value="middle">Middle of classroom</SelectItem>
+                      <SelectItem value="back">Back of classroom</SelectItem>
+                      <SelectItem value="window">Near window</SelectItem>
+                      <SelectItem value="door">Near door</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {classSettings.allow_avoid_students && (
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-lg">Students to Avoid (Optional)</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Students you'd prefer NOT to sit near
+                  </p>
+                  {avoidStudents.map((avoid, index) => (
+                    <div key={index} className="space-y-2">
+                      <Label htmlFor={`avoid-${index}`}>
+                        Avoid #{index + 1}
+                      </Label>
+                      <Input
+                        id={`avoid-${index}`}
+                        type="text"
+                        placeholder="Enter student name (optional)"
+                        value={avoid}
+                        onChange={(e) => updateAvoidStudent(index, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-2 pt-4 border-t">
                 <Label htmlFor="comments">Additional Comments (Optional)</Label>
                 <Textarea
                   id="comments"

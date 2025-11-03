@@ -219,6 +219,14 @@ const TeacherDashboard = () => {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
+                  onClick={() => navigate(`/teacher/class/${cls.id}/preferences`)}
+                >
+                  <ClipboardList className="mr-2 h-4 w-4" />
+                  Your Preferences
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
                   onClick={() => navigate(`/teacher/class/${cls.id}/layout`)}
                 >
                   <LayoutGrid className="mr-2 h-4 w-4" />
@@ -227,10 +235,10 @@ const TeacherDashboard = () => {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => navigate(`/teacher/class/${cls.id}/preferences`)}
+                  onClick={() => navigate(`/teacher/class/${cls.id}/manage-prefs`)}
                 >
                   <ClipboardList className="mr-2 h-4 w-4" />
-                  Student Preferences
+                  Student Submissions
                 </Button>
                 <Button
                   variant="outline"
