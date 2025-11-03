@@ -10,10 +10,20 @@ const StudentSuccess = () => {
   const studentName = studentData ? JSON.parse(studentData).name : "Student";
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <FloatingBubbles />
+    <div className="min-h-screen flex flex-col">
+      <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <button 
+          onClick={() => navigate("/")}
+          className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+        >
+          🥔potato groups🥔
+        </button>
+      </header>
       
-      <Card className="w-full max-w-md relative z-10 shadow-[var(--shadow-glow)] text-center">
+      <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
+        <FloatingBubbles />
+        
+        <Card className="w-full max-w-md relative z-10 shadow-[var(--shadow-glow)] text-center">
         <CardHeader className="space-y-4">
           <div className="mx-auto">
             <CheckCircle className="w-20 h-20 text-primary animate-scale-in" />
@@ -59,6 +69,7 @@ const StudentSuccess = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

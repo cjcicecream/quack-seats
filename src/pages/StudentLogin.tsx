@@ -103,18 +103,28 @@ const StudentLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <FloatingBubbles />
+    <div className="min-h-screen flex flex-col">
+      <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <button 
+          onClick={() => navigate("/")}
+          className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+        >
+          🥔potato groups🥔
+        </button>
+      </header>
       
-      <Card className="w-full max-w-md relative z-10 shadow-[var(--shadow-glow)]">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            🥔potato groups🥔
-          </CardTitle>
-          <CardDescription className="text-lg">
-            Student Access - Join your class!
-          </CardDescription>
-        </CardHeader>
+      <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
+        <FloatingBubbles />
+        
+        <Card className="w-full max-w-md relative z-10 shadow-[var(--shadow-glow)]">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-3xl font-bold">
+              Student Login
+            </CardTitle>
+            <CardDescription className="text-lg">
+              Student Access - Join your class!
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -173,6 +183,7 @@ const StudentLogin = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
