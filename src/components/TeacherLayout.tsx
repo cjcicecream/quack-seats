@@ -1,9 +1,7 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { LogOut } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { Home } from "lucide-react";
 
 interface TeacherLayoutProps {
   children: ReactNode;
@@ -11,12 +9,6 @@ interface TeacherLayoutProps {
 
 export function TeacherLayout({ children }: TeacherLayoutProps) {
   const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success("Logged out successfully");
-    navigate("/");
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -28,9 +20,9 @@ export function TeacherLayout({ children }: TeacherLayoutProps) {
           🥔potato groups🥔
         </button>
         
-        <Button variant="ghost" size="sm" onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
+        <Button variant="ghost" size="sm" onClick={() => navigate("/teacher/dashboard")}>
+          <Home className="mr-2 h-4 w-4" />
+          Dashboard
         </Button>
       </header>
       
