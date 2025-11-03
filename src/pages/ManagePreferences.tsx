@@ -153,11 +153,17 @@ const ManagePreferences = () => {
                   <div>
                     <h4 className="font-semibold mb-2">Preferences:</h4>
                     <ol className="list-decimal list-inside space-y-1">
-                      {(pref.preferences as any[]).map((p: any, i: number) => (
-                        <li key={i} className="text-muted-foreground">
-                          {p.name}
+                      {Array.isArray(pref.preferences) ? (
+                        pref.preferences.map((p: any, i: number) => (
+                          <li key={i} className="text-muted-foreground">
+                            {typeof p === 'string' ? p : p.name || 'Unknown'}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-muted-foreground">
+                          {typeof pref.preferences === 'string' ? pref.preferences : JSON.stringify(pref.preferences)}
                         </li>
-                      ))}
+                      )}
                     </ol>
                   </div>
                   {pref.additional_comments && (
