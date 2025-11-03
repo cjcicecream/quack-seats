@@ -112,7 +112,7 @@ const StudentFinalView = () => {
         </div>
 
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          🐣Final Seating Chart🐣
+          🥔Final Seating Chart🥔
         </h1>
 
         {studentLocation && (

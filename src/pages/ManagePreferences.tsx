@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import FloatingBubbles from "@/components/FloatingBubbles";
-import { ArrowLeft, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Trash2 } from "lucide-react";
 
 interface Preference {
   id: string;
@@ -87,17 +86,10 @@ const ManagePreferences = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
-      <FloatingBubbles />
-
-      <div className="max-w-4xl mx-auto relative z-10">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-
+    <div className="p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          🐣Student Preferences🐣
+          🥔Student Preferences🥔
         </h1>
 
         {preferences.length === 0 ? (

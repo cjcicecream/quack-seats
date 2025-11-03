@@ -6,8 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import FloatingBubbles from "@/components/FloatingBubbles";
-import { ArrowLeft, Plus, Save } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 
 interface Table {
   id: number;
@@ -108,17 +107,10 @@ const TableLayout = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
-      <FloatingBubbles />
-
-      <div className="max-w-6xl mx-auto relative z-10">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-
+    <div className="p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          🐣Table Layout🐣
+          🥔Table Layout🥔
         </h1>
 
         <div className="grid md:grid-cols-[300px,1fr] gap-6">

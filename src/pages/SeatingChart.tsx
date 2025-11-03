@@ -4,9 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import FloatingBubbles from "@/components/FloatingBubbles";
 import DuckAvatar from "@/components/DuckAvatar";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface Arrangement {
   id: string;
@@ -110,24 +109,17 @@ const SeatingChart = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
-      <FloatingBubbles />
-      
-      <div className="max-w-6xl mx-auto relative z-10">
+    <div className="p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            🥔View Charts🥔
+          </h1>
           <Button variant="playful" onClick={generateNewArrangement} disabled={loading}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Generate New
           </Button>
         </div>
-
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          🐣View Charts🐣
-        </h1>
 
         {currentArrangement ? (
           <Card className="p-8 shadow-[var(--shadow-glow)]">
