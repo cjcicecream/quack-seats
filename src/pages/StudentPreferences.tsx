@@ -146,6 +146,13 @@ const StudentPreferences = () => {
         }
       }
 
+      // Validate gender is provided if enabled
+      if (classSettings.allow_gender_preference && !genderPreference) {
+        toast.error("Please select your gender");
+        setLoading(false);
+        return;
+      }
+
       const formattedPreferences: any = {
         students: filledPreferences.map((name, index) => ({
           name: name.trim(),
@@ -153,7 +160,7 @@ const StudentPreferences = () => {
         }))
       };
 
-      // Add optional preferences based on class settings
+      // Add required gender field
       if (classSettings.allow_gender_preference && genderPreference) {
         formattedPreferences.gender = genderPreference;
       }
@@ -282,13 +289,12 @@ const StudentPreferences = () => {
 
               {classSettings.allow_gender_preference && (
                 <div className="space-y-2 pt-4 border-t">
-                  <Label htmlFor="gender">Gender Preference (Optional)</Label>
+                  <Label htmlFor="gender">Gender *</Label>
                   <Select value={genderPreference || "none"} onValueChange={(value) => setGenderPreference(value === "none" ? "" : value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="No preference" />
+                      <SelectValue placeholder="Select your gender" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No preference</SelectItem>
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
