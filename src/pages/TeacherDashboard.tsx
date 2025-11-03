@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { Plus, LayoutGrid, Users, ClipboardList, Copy, Settings } from "lucide-react";
+import { Plus, LayoutGrid, Users, ClipboardList, Copy, Settings, Trash2 } from "lucide-react";
 
 interface Class {
   id: string;
@@ -105,6 +105,26 @@ const TeacherDashboard = () => {
     }
   };
 
+  const handleDeleteClass = async (classId: string, className: string) => {
+    if (!confirm(`Are you sure you want to delete "${className}"? This will remove all associated data including students, preferences, and seating arrangements.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("classes")
+        .delete()
+        .eq("id", classId);
+
+      if (error) throw error;
+
+      toast.success("Class deleted successfully");
+      loadClasses();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete class");
+    }
+  };
+
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -159,21 +179,33 @@ const TeacherDashboard = () => {
           {classes.map((cls) => (
             <Card key={cls.id} className="shadow-[var(--shadow-glow)] hover:scale-105 transition-transform">
               <CardHeader>
-                <CardTitle>{cls.name}</CardTitle>
-                <CardDescription className="flex items-center gap-2">
-                  <span>Code: <span className="font-mono font-bold text-primary">{cls.class_code}</span></span>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle>{cls.name}</CardTitle>
+                    <CardDescription className="flex items-center gap-2">
+                      <span>Code: <span className="font-mono font-bold text-primary">{cls.class_code}</span></span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => {
+                          navigator.clipboard.writeText(cls.class_code);
+                          toast.success("Class code copied to clipboard!");
+                        }}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </CardDescription>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
-                    onClick={() => {
-                      navigator.clipboard.writeText(cls.class_code);
-                      toast.success("Class code copied to clipboard!");
-                    }}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => handleDeleteClass(cls.id, cls.name)}
                   >
-                    <Copy className="h-3 w-3" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
-                </CardDescription>
+                </div>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button
