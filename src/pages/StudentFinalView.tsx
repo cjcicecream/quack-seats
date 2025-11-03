@@ -12,6 +12,7 @@ const StudentFinalView = () => {
   const [arrangement, setArrangement] = useState<any>(null);
   const [studentName, setStudentName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [canViewSeating, setCanViewSeating] = useState(false);
   const navigate = useNavigate();
 
   const checkStudent = async () => {
@@ -30,18 +31,33 @@ const StudentFinalView = () => {
 
   const loadArrangement = async (classId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("seating_arrangements")
-        .select("arrangement")
-        .eq("class_id", classId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // First check if teacher allows students to view seating
+      const { data: classData, error: classError } = await supabase
+        .from("classes")
+        .select("show_seating_to_students")
+        .eq("id", classId)
+        .single();
 
-      if (error) throw error;
+      if (classError) throw classError;
 
-      if (data) {
-        setArrangement(data.arrangement as any);
+      const canView = (classData as any)?.show_seating_to_students || false;
+      setCanViewSeating(canView);
+
+      // Only fetch arrangement if viewing is allowed
+      if (canView) {
+        const { data, error } = await supabase
+          .from("seating_arrangements")
+          .select("arrangement")
+          .eq("class_id", classId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (data) {
+          setArrangement(data.arrangement as any);
+        }
       }
     } catch (error: any) {
       toast.error("Failed to load seating chart");
@@ -138,7 +154,18 @@ const StudentFinalView = () => {
           </Card>
         )}
 
-        {arrangement ? (
+        {!canViewSeating ? (
+          <Card className="p-12 text-center">
+            <div className="text-6xl mb-4">🔒</div>
+            <h2 className="text-2xl font-bold mb-4">Seating Chart Not Available</h2>
+            <p className="text-muted-foreground text-lg mb-4">
+              Your teacher hasn't shared the seating chart with the class yet
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Check back later or ask your teacher to enable viewing!
+            </p>
+          </Card>
+        ) : arrangement ? (
           <Card className="p-8 shadow-[var(--shadow-glow)]">
             <div className="grid gap-8">
               {arrangement.tables?.map((table: any, tableIndex: number) => {
