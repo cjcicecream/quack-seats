@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface Preference {
@@ -19,41 +19,16 @@ interface Preference {
   };
 }
 
-interface CommentRelevance {
-  [key: string]: boolean | null; // null means loading
-}
-
 const ManagePreferences = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [commentRelevance, setCommentRelevance] = useState<CommentRelevance>({});
 
   useEffect(() => {
     loadPreferences();
   }, [classId]);
-
-  useEffect(() => {
-    // Analyze comments for relevance
-    preferences.forEach(async (pref) => {
-      if (pref.additional_comments && !(pref.id in commentRelevance)) {
-        setCommentRelevance(prev => ({ ...prev, [pref.id]: null })); // Set loading
-        try {
-          const { data, error } = await supabase.functions.invoke('analyze-comment', {
-            body: { comment: pref.additional_comments }
-          });
-          
-          if (error) throw error;
-          setCommentRelevance(prev => ({ ...prev, [pref.id]: data.isRelevant }));
-        } catch (error) {
-          console.error("Failed to analyze comment:", error);
-          setCommentRelevance(prev => ({ ...prev, [pref.id]: true })); // Default to showing
-        }
-      }
-    });
-  }, [preferences]);
 
   const loadPreferences = async () => {
     try {
@@ -141,7 +116,6 @@ const ManagePreferences = () => {
           <div className="space-y-4">
             {preferences.map((pref) => {
               const isExpanded = expandedIds.has(pref.id);
-              const isRelevant = commentRelevance[pref.id];
               const hasComment = !!pref.additional_comments;
               
               return (
@@ -179,19 +153,6 @@ const ManagePreferences = () => {
                             "No preferences submitted"
                           )}
                         </CardDescription>
-                        
-                        {/* Show relevant comment indicator */}
-                        {hasComment && isRelevant === true && (
-                          <Badge variant="outline" className="mt-2 border-amber-500 text-amber-700 dark:text-amber-300">
-                            📝 Important Comment
-                          </Badge>
-                        )}
-                        {hasComment && isRelevant === null && (
-                          <Badge variant="outline" className="mt-2">
-                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                            Analyzing comment...
-                          </Badge>
-                        )}
                       </div>
                       
                       <div className="flex gap-2 ml-4">
@@ -264,19 +225,7 @@ const ManagePreferences = () => {
                         
                         {hasComment && (
                           <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold">Additional Comments:</h4>
-                              {isRelevant === true && (
-                                <Badge variant="outline" className="border-amber-500 text-amber-700 dark:text-amber-300 text-xs">
-                                  Relevant
-                                </Badge>
-                              )}
-                              {isRelevant === false && (
-                                <Badge variant="outline" className="text-xs opacity-60">
-                                  Not Critical
-                                </Badge>
-                              )}
-                            </div>
+                            <h4 className="font-semibold mb-2">Additional Comments:</h4>
                             <p className="text-muted-foreground italic">
                               "{pref.additional_comments}"
                             </p>
