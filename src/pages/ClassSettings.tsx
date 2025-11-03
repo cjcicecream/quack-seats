@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { TeacherLayout } from "@/components/TeacherLayout";
 
 interface ClassSettings {
   name: string;
@@ -83,99 +82,93 @@ const ClassSettings = () => {
   };
 
   if (loading) {
-    return (
-      <TeacherLayout>
-        <div className="flex items-center justify-center min-h-[400px]">Loading...</div>
-      </TeacherLayout>
-    );
+    return <div className="flex items-center justify-center min-h-[400px]">Loading...</div>;
   }
 
   return (
-    <TeacherLayout>
-      <div className="p-4 md:p-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Class Settings: {settings.name}
-          </h1>
+    <div className="p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          Class Settings: {settings.name}
+        </h1>
 
-          <Card className="shadow-[var(--shadow-glow)]">
-            <CardHeader>
-              <CardTitle>Preference Options</CardTitle>
-              <CardDescription>
-                Configure what options students have when submitting their seating preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="maxPreferences">Maximum Preferences per Student</Label>
-                <Input
-                  id="maxPreferences"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={settings.max_preferences}
-                  onChange={(e) => setSettings({ ...settings, max_preferences: parseInt(e.target.value) || 3 })}
-                />
+        <Card className="shadow-[var(--shadow-glow)]">
+          <CardHeader>
+            <CardTitle>Preference Options</CardTitle>
+            <CardDescription>
+              Configure what options students have when submitting their seating preferences
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="maxPreferences">Maximum Preferences per Student</Label>
+              <Input
+                id="maxPreferences"
+                type="number"
+                min="1"
+                max="10"
+                value={settings.max_preferences}
+                onChange={(e) => setSettings({ ...settings, max_preferences: parseInt(e.target.value) || 3 })}
+              />
+              <p className="text-sm text-muted-foreground">
+                How many students can each student select as their preferred seatmates?
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between space-x-4 py-3 border-b">
+              <div className="space-y-0.5">
+                <Label htmlFor="genderPreference">Allow Gender Preferences</Label>
                 <p className="text-sm text-muted-foreground">
-                  How many students can each student select as their preferred seatmates?
+                  Students can specify if they prefer sitting with a particular gender
                 </p>
               </div>
+              <Switch
+                id="genderPreference"
+                checked={settings.allow_gender_preference}
+                onCheckedChange={(checked) => setSettings({ ...settings, allow_gender_preference: checked })}
+              />
+            </div>
 
-              <div className="flex items-center justify-between space-x-4 py-3 border-b">
-                <div className="space-y-0.5">
-                  <Label htmlFor="genderPreference">Allow Gender Preferences</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Students can specify if they prefer sitting with a particular gender
-                  </p>
-                </div>
-                <Switch
-                  id="genderPreference"
-                  checked={settings.allow_gender_preference}
-                  onCheckedChange={(checked) => setSettings({ ...settings, allow_gender_preference: checked })}
-                />
+            <div className="flex items-center justify-between space-x-4 py-3 border-b">
+              <div className="space-y-0.5">
+                <Label htmlFor="seatingPosition">Allow Seating Position Preferences</Label>
+                <p className="text-sm text-muted-foreground">
+                  Students can indicate preferred classroom locations (front, back, near window, etc.)
+                </p>
               </div>
+              <Switch
+                id="seatingPosition"
+                checked={settings.allow_seating_position}
+                onCheckedChange={(checked) => setSettings({ ...settings, allow_seating_position: checked })}
+              />
+            </div>
 
-              <div className="flex items-center justify-between space-x-4 py-3 border-b">
-                <div className="space-y-0.5">
-                  <Label htmlFor="seatingPosition">Allow Seating Position Preferences</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Students can indicate preferred classroom locations (front, back, near window, etc.)
-                  </p>
-                </div>
-                <Switch
-                  id="seatingPosition"
-                  checked={settings.allow_seating_position}
-                  onCheckedChange={(checked) => setSettings({ ...settings, allow_seating_position: checked })}
-                />
+            <div className="flex items-center justify-between space-x-4 py-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="avoidStudents">Allow "Avoid" Preferences</Label>
+                <p className="text-sm text-muted-foreground">
+                  Students can specify classmates they prefer NOT to sit near
+                </p>
               </div>
+              <Switch
+                id="avoidStudents"
+                checked={settings.allow_avoid_students}
+                onCheckedChange={(checked) => setSettings({ ...settings, allow_avoid_students: checked })}
+              />
+            </div>
 
-              <div className="flex items-center justify-between space-x-4 py-3">
-                <div className="space-y-0.5">
-                  <Label htmlFor="avoidStudents">Allow "Avoid" Preferences</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Students can specify classmates they prefer NOT to sit near
-                  </p>
-                </div>
-                <Switch
-                  id="avoidStudents"
-                  checked={settings.allow_avoid_students}
-                  onCheckedChange={(checked) => setSettings({ ...settings, allow_avoid_students: checked })}
-                />
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <Button onClick={handleSave} disabled={saving} variant="playful" className="flex-1">
-                  {saving ? "Saving..." : "Save Settings"}
-                </Button>
-                <Button onClick={() => navigate("/teacher/dashboard")} variant="outline">
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <div className="flex gap-4 pt-4">
+              <Button onClick={handleSave} disabled={saving} variant="playful" className="flex-1">
+                {saving ? "Saving..." : "Save Settings"}
+              </Button>
+              <Button onClick={() => navigate("/teacher/dashboard")} variant="outline">
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </TeacherLayout>
+    </div>
   );
 };
 
