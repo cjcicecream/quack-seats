@@ -18,7 +18,7 @@ const StudentLogin = () => {
     // Check if student info is already in session
     const studentData = sessionStorage.getItem("student_data");
     if (studentData) {
-      navigate("/student/home");
+      navigate("/student/preferences");
     }
   }, [navigate]);
 
@@ -94,7 +94,7 @@ const StudentLogin = () => {
       }));
 
       toast.success(`Welcome ${studentRecord.name}!`);
-      navigate("/student/home");
+      navigate("/student/preferences");
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
     } finally {
