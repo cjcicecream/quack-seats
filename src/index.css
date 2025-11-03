@@ -121,7 +121,7 @@ All colors MUST be HSL.
       inset 0 0 20px hsla(0, 0%, 100%, 0.3),
       0 4px 20px hsla(330, 80%, 60%, 0.2),
       0 8px 40px hsla(200, 95%, 60%, 0.15);
-    backdrop-filter: blur(2px);
+    z-index: -1;
   }
 
   .bubble-shine {

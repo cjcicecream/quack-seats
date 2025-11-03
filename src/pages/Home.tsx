@@ -53,14 +53,14 @@ const Home = () => {
             </Button>
           </div>
 
-          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-8 shadow-[var(--shadow-glow)] border-2 border-accent/20 hover:border-accent/40 transition-all hover:scale-105">
-            <Eye className="w-16 h-16 mx-auto mb-4 text-accent-foreground" />
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-8 shadow-[var(--shadow-glow)] border-2 border-primary/20 hover:border-primary/40 transition-all hover:scale-105">
+            <Eye className="w-16 h-16 mx-auto mb-4 text-primary" />
             <h2 className="text-2xl font-bold mb-3">View Charts</h2>
             <p className="text-muted-foreground mb-6">
               View the final seating arrangement with all students
             </p>
             <Button
-              variant="outline"
+              variant="playful"
               size="lg"
               className="w-full"
               onClick={() => navigate("/student/final-view")}

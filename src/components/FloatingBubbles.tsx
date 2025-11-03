@@ -8,7 +8,7 @@ const FloatingBubbles = () => {
   }));
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
       {bubbles.map((bubble) => (
         <div
           key={bubble.id}
