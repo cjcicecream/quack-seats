@@ -206,7 +206,7 @@ const StudentFinalView = () => {
                                 )}
                               </div>
                             ) : (
-                              <div className="w-16 h-20 border-2 border-dashed border-muted rounded-lg flex items-center justify-center text-3xl">
+                              <div className="w-16 h-20 border-2 border-dashed border-muted-foreground/30 bg-muted/20 rounded-lg flex items-center justify-center text-3xl opacity-50">
                                 🥔
                               </div>
                             )}
