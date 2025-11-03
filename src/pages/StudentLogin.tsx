@@ -119,13 +119,17 @@ const StudentLogin = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Your Name</Label>
+              <p className="text-sm text-muted-foreground">
+                Please enter your first and last initial (e.g., JD for John Doe)
+              </p>
               <Input
                 id="name"
                 type="text"
-                placeholder="Enter your name"
+                placeholder="e.g., JD"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                maxLength={10}
               />
             </div>
             
