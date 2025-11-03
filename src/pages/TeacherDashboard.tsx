@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { Plus, LayoutGrid, Users, ClipboardList, Copy } from "lucide-react";
+import { Plus, LayoutGrid, Users, ClipboardList, Copy, Settings } from "lucide-react";
 
 interface Class {
   id: string;
@@ -22,7 +22,6 @@ const TeacherDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [className, setClassName] = useState("");
-  const [maxPreferences, setMaxPreferences] = useState(3);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,7 +91,7 @@ const TeacherDashboard = () => {
         teacher_id: user.id,
         name: normalizedClassName,
         class_code: classCode,
-        max_preferences: maxPreferences,
+        max_preferences: 3, // Default value, can be changed in settings
       });
 
       if (error) throw error;
@@ -148,18 +147,6 @@ const TeacherDashboard = () => {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxPreferences">Max Student Preferences</Label>
-                  <Input
-                    id="maxPreferences"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={maxPreferences}
-                    onChange={(e) => setMaxPreferences(parseInt(e.target.value))}
-                    required
-                  />
-                </div>
                 <Button type="submit" variant="playful" className="w-full">
                   Create Class
                 </Button>
@@ -189,6 +176,14 @@ const TeacherDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => navigate(`/teacher/class/${cls.id}/settings`)}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start"

@@ -33,6 +33,7 @@ export function TeacherSidebar() {
 
   const classItems = classId
     ? [
+        { title: "Settings", url: `/teacher/class/${classId}/settings`, icon: LayoutDashboard },
         { title: "Table Layout", url: `/teacher/class/${classId}/layout`, icon: LayoutGrid },
         { title: "Preferences", url: `/teacher/class/${classId}/preferences`, icon: ClipboardList },
         { title: "Seating Chart", url: `/teacher/class/${classId}/chart`, icon: Users },

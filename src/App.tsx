@@ -14,6 +14,7 @@ import StudentFinalView from "./pages/StudentFinalView";
 import SeatingChart from "./pages/SeatingChart";
 import TableLayout from "./pages/TableLayout";
 import ManagePreferences from "./pages/ManagePreferences";
+import ClassSettings from "./pages/ClassSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/" element={<Home />} />
           <Route path="/teacher/auth" element={<TeacherAuth />} />
           <Route path="/teacher/dashboard" element={<TeacherLayout><TeacherDashboard /></TeacherLayout>} />
+          <Route path="/teacher/class/:classId/settings" element={<TeacherLayout><ClassSettings /></TeacherLayout>} />
           <Route path="/teacher/class/:classId/layout" element={<TeacherLayout><TableLayout /></TeacherLayout>} />
           <Route path="/teacher/class/:classId/preferences" element={<TeacherLayout><ManagePreferences /></TeacherLayout>} />
           <Route path="/teacher/class/:classId/chart" element={<TeacherLayout><SeatingChart /></TeacherLayout>} />
