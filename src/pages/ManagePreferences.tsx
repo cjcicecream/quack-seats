@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface Preference {
   id: string;
@@ -18,15 +19,41 @@ interface Preference {
   };
 }
 
+interface CommentRelevance {
+  [key: string]: boolean | null; // null means loading
+}
+
 const ManagePreferences = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [commentRelevance, setCommentRelevance] = useState<CommentRelevance>({});
 
   useEffect(() => {
     loadPreferences();
   }, [classId]);
+
+  useEffect(() => {
+    // Analyze comments for relevance
+    preferences.forEach(async (pref) => {
+      if (pref.additional_comments && !(pref.id in commentRelevance)) {
+        setCommentRelevance(prev => ({ ...prev, [pref.id]: null })); // Set loading
+        try {
+          const { data, error } = await supabase.functions.invoke('analyze-comment', {
+            body: { comment: pref.additional_comments }
+          });
+          
+          if (error) throw error;
+          setCommentRelevance(prev => ({ ...prev, [pref.id]: data.isRelevant }));
+        } catch (error) {
+          console.error("Failed to analyze comment:", error);
+          setCommentRelevance(prev => ({ ...prev, [pref.id]: true })); // Default to showing
+        }
+      }
+    });
+  }, [preferences]);
 
   const loadPreferences = async () => {
     try {
@@ -81,6 +108,18 @@ const ManagePreferences = () => {
     }
   };
 
+  const toggleExpanded = (id: string) => {
+    setExpandedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -100,83 +139,155 @@ const ManagePreferences = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {preferences.map((pref) => (
-              <Card key={pref.id} className="shadow-[var(--shadow-glow)]">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle>{pref.students.name}</CardTitle>
-                      <CardDescription>
-                        {pref.status === "approved" && (
-                          <Badge className="bg-green-500">Approved</Badge>
+            {preferences.map((pref) => {
+              const isExpanded = expandedIds.has(pref.id);
+              const isRelevant = commentRelevance[pref.id];
+              const hasComment = !!pref.additional_comments;
+              
+              return (
+                <Card key={pref.id} className="shadow-[var(--shadow-glow)]">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle>{pref.students.name}</CardTitle>
+                          {pref.status === "approved" && (
+                            <Badge className="bg-green-500">Approved</Badge>
+                          )}
+                          {pref.status === "declined" && (
+                            <Badge variant="destructive">Declined</Badge>
+                          )}
+                          {pref.status === "pending" && (
+                            <Badge variant="secondary">Pending</Badge>
+                          )}
+                        </div>
+                        
+                        {/* Simple preview of preferences */}
+                        <CardDescription className="text-sm">
+                          {Array.isArray(pref.preferences) && pref.preferences.length > 0 ? (
+                            <>
+                              Wants to sit with: {" "}
+                              <span className="font-medium">
+                                {pref.preferences
+                                  .slice(0, 2)
+                                  .map((p: any) => typeof p === 'string' ? p : p.name || 'Unknown')
+                                  .join(", ")}
+                                {pref.preferences.length > 2 && ` +${pref.preferences.length - 2} more`}
+                              </span>
+                            </>
+                          ) : (
+                            "No preferences submitted"
+                          )}
+                        </CardDescription>
+                        
+                        {/* Show relevant comment indicator */}
+                        {hasComment && isRelevant === true && (
+                          <Badge variant="outline" className="mt-2 border-amber-500 text-amber-700 dark:text-amber-300">
+                            📝 Important Comment
+                          </Badge>
                         )}
-                        {pref.status === "declined" && (
-                          <Badge variant="destructive">Declined</Badge>
+                        {hasComment && isRelevant === null && (
+                          <Badge variant="outline" className="mt-2">
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            Analyzing comment...
+                          </Badge>
                         )}
+                      </div>
+                      
+                      <div className="flex gap-2 ml-4">
                         {pref.status === "pending" && (
-                          <Badge variant="secondary">Pending</Badge>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => updateStatus(pref.id, "approved")}
+                            >
+                              <CheckCircle className="mr-1 h-4 w-4" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => updateStatus(pref.id, "declined")}
+                            >
+                              <XCircle className="mr-1 h-4 w-4" />
+                              Decline
+                            </Button>
+                          </>
                         )}
-                      </CardDescription>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => deletePreference(pref.id, pref.students.name)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      {pref.status === "pending" && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => updateStatus(pref.id, "approved")}
-                          >
-                            <CheckCircle className="mr-1 h-4 w-4" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => updateStatus(pref.id, "declined")}
-                          >
-                            <XCircle className="mr-1 h-4 w-4" />
-                            Decline
-                          </Button>
-                        </>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => deletePreference(pref.id, pref.students.name)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Preferences:</h4>
-                    <ol className="list-decimal list-inside space-y-1">
-                      {Array.isArray(pref.preferences) ? (
-                        pref.preferences.map((p: any, i: number) => (
-                          <li key={i} className="text-muted-foreground">
-                            {typeof p === 'string' ? p : p.name || 'Unknown'}
-                          </li>
-                        ))
-                      ) : (
-                        <li className="text-muted-foreground">
-                          {typeof pref.preferences === 'string' ? pref.preferences : JSON.stringify(pref.preferences)}
-                        </li>
-                      )}
-                    </ol>
-                  </div>
-                  {pref.additional_comments && (
-                    <div>
-                      <h4 className="font-semibold mb-2">Additional Comments:</h4>
-                      <p className="text-muted-foreground italic">
-                        "{pref.additional_comments}"
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                  </CardHeader>
+                  
+                  <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(pref.id)}>
+                    <CardContent>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-full">
+                          {isExpanded ? (
+                            <>
+                              <ChevronUp className="mr-2 h-4 w-4" />
+                              Hide Details
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="mr-2 h-4 w-4" />
+                              Show Details
+                            </>
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                      
+                      <CollapsibleContent className="space-y-4 mt-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">All Preferences:</h4>
+                          <ol className="list-decimal list-inside space-y-1">
+                            {Array.isArray(pref.preferences) ? (
+                              pref.preferences.map((p: any, i: number) => (
+                                <li key={i} className="text-muted-foreground">
+                                  {typeof p === 'string' ? p : p.name || 'Unknown'}
+                                </li>
+                              ))
+                            ) : (
+                              <li className="text-muted-foreground">
+                                {typeof pref.preferences === 'string' ? pref.preferences : JSON.stringify(pref.preferences)}
+                              </li>
+                            )}
+                          </ol>
+                        </div>
+                        
+                        {hasComment && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-semibold">Additional Comments:</h4>
+                              {isRelevant === true && (
+                                <Badge variant="outline" className="border-amber-500 text-amber-700 dark:text-amber-300 text-xs">
+                                  Relevant
+                                </Badge>
+                              )}
+                              {isRelevant === false && (
+                                <Badge variant="outline" className="text-xs opacity-60">
+                                  Not Critical
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-muted-foreground italic">
+                              "{pref.additional_comments}"
+                            </p>
+                          </div>
+                        )}
+                      </CollapsibleContent>
+                    </CardContent>
+                  </Collapsible>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
