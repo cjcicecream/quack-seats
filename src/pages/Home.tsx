@@ -12,7 +12,7 @@ const Home = () => {
       
       <div className="relative z-10 text-center max-w-4xl mx-auto space-y-8">
         <div className="space-y-4">
-          <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-fade-in">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-fade-in leading-tight break-words">
             🥔potato groups🥔
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground animate-fade-in">

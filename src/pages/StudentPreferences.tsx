@@ -125,13 +125,32 @@ const StudentPreferences = () => {
 
       const student = JSON.parse(studentData);
 
+      // Validate no duplicate names in seating preferences
+      const filledPreferences = preferences.filter(pref => pref.trim() !== "");
+      const uniquePrefs = new Set(filledPreferences.map(p => p.toLowerCase().trim()));
+      if (filledPreferences.length !== uniquePrefs.size) {
+        toast.error("Please remove duplicate student names from your preferences");
+        setLoading(false);
+        return;
+      }
+
+      // Validate avoid students don't duplicate seating preferences
+      if (classSettings.allow_avoid_students) {
+        const filledAvoid = avoidStudents.filter(a => a.trim() !== "");
+        for (const avoidName of filledAvoid) {
+          if (filledPreferences.some(p => p.toLowerCase().trim() === avoidName.toLowerCase().trim())) {
+            toast.error("You can't have the same student in both 'sit with' and 'avoid' lists");
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
       const formattedPreferences: any = {
-        students: preferences
-          .filter(pref => pref.trim() !== "")
-          .map((name, index) => ({
-            name: name.trim(),
-            rank: index + 1
-          }))
+        students: filledPreferences.map((name, index) => ({
+          name: name.trim(),
+          rank: index + 1
+        }))
       };
 
       // Add optional preferences based on class settings
@@ -159,7 +178,7 @@ const StudentPreferences = () => {
 
       if (error) throw error;
 
-      toast.success("Preferences submitted successfully!");
+      toast.success("Preferences submitted successfully! You can update them anytime before the teacher creates the final chart.");
       navigate("/student/success");
     } catch (error: any) {
       toast.error(error.message || "Failed to submit preferences");
@@ -224,6 +243,11 @@ const StudentPreferences = () => {
             )}
             <CardDescription className="text-lg">
               Who would you like to sit with? (Rank your preferences)
+              {preferences.some(p => p.trim() !== "") && (
+                <span className="block mt-2 text-sm text-primary">
+                  ✓ Your previous preferences have been loaded. You can update them anytime!
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
