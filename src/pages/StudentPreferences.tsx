@@ -283,12 +283,12 @@ const StudentPreferences = () => {
               {classSettings.allow_gender_preference && (
                 <div className="space-y-2 pt-4 border-t">
                   <Label htmlFor="gender">Gender Preference (Optional)</Label>
-                  <Select value={genderPreference} onValueChange={setGenderPreference}>
+                  <Select value={genderPreference || "none"} onValueChange={(value) => setGenderPreference(value === "none" ? "" : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="No preference" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No preference</SelectItem>
+                      <SelectItem value="none">No preference</SelectItem>
                       <SelectItem value="same">Same gender</SelectItem>
                       <SelectItem value="different">Different gender</SelectItem>
                       <SelectItem value="mixed">Mixed group</SelectItem>
@@ -300,12 +300,12 @@ const StudentPreferences = () => {
               {classSettings.allow_seating_position && (
                 <div className="space-y-2 pt-4 border-t">
                   <Label htmlFor="position">Seating Position Preference (Optional)</Label>
-                  <Select value={seatingPosition} onValueChange={setSeatingPosition}>
+                  <Select value={seatingPosition || "none"} onValueChange={(value) => setSeatingPosition(value === "none" ? "" : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="No preference" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No preference</SelectItem>
+                      <SelectItem value="none">No preference</SelectItem>
                       <SelectItem value="front">Front of classroom</SelectItem>
                       <SelectItem value="middle">Middle of classroom</SelectItem>
                       <SelectItem value="back">Back of classroom</SelectItem>
