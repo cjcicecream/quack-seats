@@ -65,11 +65,17 @@ const StudentLogin = () => {
 
       // If student doesn't exist, create them
       if (!studentRecord) {
+        // Normalize name to Title Case for consistent storage
+        const normalizedName = name.trim()
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+          
         const { data: newStudent, error: studentError } = await supabase
           .from("students")
           .insert({
             class_id: classData.id,
-            name: name.trim(),
+            name: normalizedName,
             auth_user_id: null
           })
           .select()

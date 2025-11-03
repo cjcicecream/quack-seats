@@ -82,9 +82,15 @@ const TeacherDashboard = () => {
       
       if (!user) throw new Error("Not authenticated");
 
+      // Normalize class name to Title Case
+      const normalizedClassName = className.trim()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+
       const { error } = await supabase.from("classes").insert({
         teacher_id: user.id,
-        name: className,
+        name: normalizedClassName,
         class_code: classCode,
         max_preferences: maxPreferences,
       });
