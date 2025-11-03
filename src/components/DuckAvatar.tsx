@@ -1,4 +1,4 @@
-import duckImage from "@/assets/duck.jpeg";
+import potatoImage from "@/assets/potato.png";
 
 interface DuckAvatarProps {
   name: string;
@@ -22,8 +22,8 @@ const DuckAvatar = ({ name, size = "md" }: DuckAvatarProps) => {
     <div className="flex flex-col items-center gap-2">
       <div className={`${sizes[size]} relative flex items-center justify-center`}>
         <img 
-          src={duckImage} 
-          alt="Duck" 
+          src={potatoImage} 
+          alt="Potato" 
           className="w-full h-full object-contain"
         />
       </div>
