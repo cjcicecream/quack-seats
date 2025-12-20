@@ -162,6 +162,8 @@ const FloatingBubbles = () => {
           onClick={(e) => !bubble.isPopping && handleBubblePop(bubble, e)}
         >
           <div className="bubble-shine" />
+          <div className="bubble-reflection" />
+          <div className="bubble-reflection-small" />
         </div>
       ))}
       

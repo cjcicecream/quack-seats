@@ -166,17 +166,43 @@ All colors MUST be HSL.
 
   .bubble-shine {
     position: absolute;
-    top: 15%;
-    left: 20%;
-    width: 40%;
-    height: 40%;
+    top: 12%;
+    left: 15%;
+    width: 35%;
+    height: 35%;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, 
-      hsla(0, 0%, 100%, 0.6) 0%,
-      hsla(0, 0%, 100%, 0.3) 30%,
+    background: radial-gradient(circle at 40% 40%, 
+      hsla(0, 0%, 100%, 0.9) 0%,
+      hsla(0, 0%, 100%, 0.5) 40%,
       transparent 70%
     );
-    filter: blur(8px);
+    filter: blur(2px);
+  }
+
+  .bubble-reflection {
+    position: absolute;
+    bottom: 18%;
+    right: 18%;
+    width: 20%;
+    height: 20%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, 
+      hsla(0, 0%, 100%, 0.7) 0%,
+      hsla(0, 0%, 100%, 0.3) 50%,
+      transparent 80%
+    );
+    filter: blur(1px);
+  }
+
+  .bubble-reflection-small {
+    position: absolute;
+    top: 55%;
+    left: 12%;
+    width: 10%;
+    height: 10%;
+    border-radius: 50%;
+    background: hsla(0, 0%, 100%, 0.6);
+    filter: blur(1px);
   }
 
   @keyframes float {
