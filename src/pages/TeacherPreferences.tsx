@@ -18,7 +18,7 @@ const TeacherPreferences = () => {
   const [preferences, setPreferences] = useState({
     prioritize_student_requests: true,
     avoid_large_groups: false,
-    balance_personalities: false,
+    mix_genders_at_tables: false,
     separate_disruptive: true, // Always enabled automatically
     notes: ""
   });
@@ -116,16 +116,16 @@ const TeacherPreferences = () => {
 
             <div className="flex items-start justify-between gap-4 py-3 border-b">
               <div className="space-y-0.5 flex-1 min-w-0">
-                <Label htmlFor="balance">Balance Personalities</Label>
+                <Label htmlFor="mixGenders">Mix Genders at Tables</Label>
                 <p className="text-sm text-muted-foreground">
-                  Mix different types of students (quiet/outgoing, strong/struggling)
+                  Try to have both genders represented at each table
                 </p>
               </div>
               <Switch
-                id="balance"
-                checked={preferences.balance_personalities}
+                id="mixGenders"
+                checked={preferences.mix_genders_at_tables}
                 onCheckedChange={(checked) => 
-                  setPreferences({ ...preferences, balance_personalities: checked })
+                  setPreferences({ ...preferences, mix_genders_at_tables: checked })
                 }
                 className="shrink-0"
               />
