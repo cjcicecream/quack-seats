@@ -37,48 +37,85 @@ const FloatingBubbles = () => {
   const particleIdRef = useRef(0);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Create a pop sound using Web Audio API
+  // Create a natural bubble pop sound using Web Audio API
   const playPopSound = useCallback(() => {
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
       const ctx = audioContextRef.current;
+      const now = ctx.currentTime;
       
-      // Create oscillator for the pop
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
+      // Create noise buffer for the "wet splash" effect
+      const noiseLength = ctx.sampleRate * 0.1;
+      const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
+      const noiseData = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < noiseLength; i++) {
+        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 3);
+      }
       
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      // Noise source for splash texture
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
       
-      // Pop sound: quick frequency drop with noise-like characteristics
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(800, ctx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1);
+      // Bandpass filter to make noise sound "bubbly"
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.setValueAtTime(2000, now);
+      noiseFilter.Q.setValueAtTime(1, now);
       
-      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.15, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
       
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.15);
-
-      // Add a second oscillator for more "pop" texture
-      const oscillator2 = ctx.createOscillator();
-      const gainNode2 = ctx.createGain();
+      noiseSource.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
       
-      oscillator2.connect(gainNode2);
-      gainNode2.connect(ctx.destination);
+      // Primary "pop" - quick sine burst
+      const pop = ctx.createOscillator();
+      const popGain = ctx.createGain();
+      pop.type = 'sine';
+      pop.frequency.setValueAtTime(400, now);
+      pop.frequency.exponentialRampToValueAtTime(80, now + 0.06);
+      popGain.gain.setValueAtTime(0.25, now);
+      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      pop.connect(popGain);
+      popGain.connect(ctx.destination);
       
-      oscillator2.type = 'square';
-      oscillator2.frequency.setValueAtTime(400, ctx.currentTime);
-      oscillator2.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.05);
+      // Secondary harmonic for richness
+      const harmonic = ctx.createOscillator();
+      const harmonicGain = ctx.createGain();
+      harmonic.type = 'sine';
+      harmonic.frequency.setValueAtTime(800, now);
+      harmonic.frequency.exponentialRampToValueAtTime(200, now + 0.04);
+      harmonicGain.gain.setValueAtTime(0.1, now);
+      harmonicGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      harmonic.connect(harmonicGain);
+      harmonicGain.connect(ctx.destination);
       
-      gainNode2.gain.setValueAtTime(0.15, ctx.currentTime);
-      gainNode2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+      // "Plop" low frequency for body
+      const plop = ctx.createOscillator();
+      const plopGain = ctx.createGain();
+      plop.type = 'sine';
+      plop.frequency.setValueAtTime(150, now);
+      plop.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+      plopGain.gain.setValueAtTime(0.2, now);
+      plopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      plop.connect(plopGain);
+      plopGain.connect(ctx.destination);
       
-      oscillator2.start(ctx.currentTime);
-      oscillator2.stop(ctx.currentTime + 0.08);
+      // Start all sounds
+      noiseSource.start(now);
+      pop.start(now);
+      harmonic.start(now);
+      plop.start(now);
+      
+      // Stop all sounds
+      noiseSource.stop(now + 0.1);
+      pop.stop(now + 0.1);
+      harmonic.stop(now + 0.1);
+      plop.stop(now + 0.15);
     } catch (error) {
       console.log('Audio not supported');
     }
