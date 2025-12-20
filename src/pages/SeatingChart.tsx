@@ -135,7 +135,7 @@ const SeatingChart = () => {
     return calculateSatisfaction(currentArrangement, studentPreferences);
   }, [currentArrangement, studentPreferences]);
 
-  // Smart seating algorithm that tries to maximize preference satisfaction
+  // Smart seating algorithm that prioritizes student preferences
   const optimizeSeating = (students: any[], tables: any[], preferences: StudentPreference[]) => {
     // Build preference graph: studentName -> list of preferred names
     const prefGraph: Record<string, string[]> = {};
@@ -154,61 +154,104 @@ const SeatingChart = () => {
       }
     });
 
-    // Calculate affinity score between two students (mutual preferences = higher)
+    // Calculate affinity score (mutual preferences weighted higher)
     const getAffinity = (s1: string, s2: string): number => {
       let score = 0;
-      if (prefGraph[s1]?.includes(s2)) score += 1;
-      if (prefGraph[s2]?.includes(s1)) score += 1;
+      if (prefGraph[s1]?.includes(s2)) score += 2; // They want to sit with them
+      if (prefGraph[s2]?.includes(s1)) score += 2; // Mutual preference bonus
       return score;
     };
 
+    // Build friend clusters based on preferences
+    const studentNames = students.map(s => s.name?.toLowerCase());
+    const clusters: string[][] = [];
+    const assigned = new Set<string>();
+
+    // Sort students by how many preferences they have (prioritize students with preferences)
+    const sortedStudents = [...students].sort((a, b) => {
+      const aPrefs = prefGraph[a.name?.toLowerCase()]?.length || 0;
+      const bPrefs = prefGraph[b.name?.toLowerCase()]?.length || 0;
+      return bPrefs - aPrefs;
+    });
+
+    // Create clusters starting from students with most preferences
+    sortedStudents.forEach(student => {
+      const name = student.name?.toLowerCase();
+      if (assigned.has(name)) return;
+
+      const cluster = [name];
+      assigned.add(name);
+
+      // Add their preferred students to the cluster
+      const prefs = prefGraph[name] || [];
+      prefs.forEach(prefName => {
+        if (!assigned.has(prefName) && studentNames.includes(prefName)) {
+          cluster.push(prefName);
+          assigned.add(prefName);
+        }
+      });
+
+      clusters.push(cluster);
+    });
+
+    // Add any remaining unassigned students
+    students.forEach(s => {
+      const name = s.name?.toLowerCase();
+      if (!assigned.has(name)) {
+        clusters.push([name]);
+        assigned.add(name);
+      }
+    });
+
     // Get table capacities
     const tableCapacities = tables.map((t: any) => t.seats?.length || 0);
-    const totalSeats = tableCapacities.reduce((a: number, b: number) => a + b, 0);
-    
-    // Start with unassigned students
-    const unassigned = [...students];
-    const tableAssignments: any[][] = tables.map(() => []);
+    const tableAssignments: string[][] = tables.map(() => []);
 
-    // Greedy assignment: for each table, try to fill with students who prefer each other
-    for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
-      const capacity = tableCapacities[tableIdx];
-      
-      while (tableAssignments[tableIdx].length < capacity && unassigned.length > 0) {
-        if (tableAssignments[tableIdx].length === 0) {
-          // First student: pick the one with most preferences to fill (most connected)
-          let bestIdx = 0;
-          let bestConnections = 0;
-          unassigned.forEach((s, idx) => {
-            const name = s.name?.toLowerCase();
-            const connections = prefGraph[name]?.length || 0;
-            if (connections > bestConnections) {
-              bestConnections = connections;
-              bestIdx = idx;
-            }
+    // Assign clusters to tables, trying to keep clusters together
+    const sortedClusters = [...clusters].sort((a, b) => b.length - a.length);
+    
+    sortedClusters.forEach(cluster => {
+      // Find table with most space that can fit as much of the cluster as possible
+      let bestTableIdx = 0;
+      let bestScore = -1;
+
+      tableAssignments.forEach((table, idx) => {
+        const remaining = tableCapacities[idx] - table.length;
+        if (remaining <= 0) return;
+        
+        // Score based on how many cluster members already at this table + space available
+        let score = remaining >= cluster.length ? 100 : 0; // Bonus for fitting whole cluster
+        cluster.forEach(name => {
+          table.forEach(seated => {
+            score += getAffinity(name, seated);
           });
-          tableAssignments[tableIdx].push(unassigned.splice(bestIdx, 1)[0]);
-        } else {
-          // Find student with highest affinity to current table members
-          let bestIdx = 0;
-          let bestScore = -1;
-          
-          unassigned.forEach((candidate, idx) => {
-            const candidateName = candidate.name?.toLowerCase();
-            let score = 0;
-            tableAssignments[tableIdx].forEach((seated: any) => {
-              score += getAffinity(candidateName, seated.name?.toLowerCase());
-            });
-            if (score > bestScore) {
-              bestScore = score;
-              bestIdx = idx;
-            }
-          });
-          
-          tableAssignments[tableIdx].push(unassigned.splice(bestIdx, 1)[0]);
+        });
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestTableIdx = idx;
         }
-      }
-    }
+      });
+
+      // Add cluster members to the chosen table
+      cluster.forEach(name => {
+        if (tableAssignments[bestTableIdx].length < tableCapacities[bestTableIdx]) {
+          tableAssignments[bestTableIdx].push(name);
+        } else {
+          // Find another table with space
+          for (let i = 0; i < tableAssignments.length; i++) {
+            if (tableAssignments[i].length < tableCapacities[i]) {
+              tableAssignments[i].push(name);
+              break;
+            }
+          }
+        }
+      });
+    });
+
+    // Convert names back to student objects
+    const nameToStudent: Record<string, any> = {};
+    students.forEach(s => { nameToStudent[s.name?.toLowerCase()] = s; });
 
     // Build final arrangement
     return {
@@ -216,7 +259,7 @@ const SeatingChart = () => {
         ...table,
         seats: table.seats.map((seat: any, seatIdx: number) => ({
           ...seat,
-          student: tableAssignments[tableIdx][seatIdx] || null,
+          student: nameToStudent[tableAssignments[tableIdx][seatIdx]] || null,
         })),
       })),
     };
