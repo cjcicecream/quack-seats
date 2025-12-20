@@ -109,7 +109,7 @@ const TableLayout = () => {
   return (
     <div className="p-3 md:p-6">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold mb-4 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+        <h1 className="text-2xl md:text-3xl font-bold mb-4 pb-1 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           🥔 Table Layout 🥔
         </h1>
 
