@@ -149,8 +149,9 @@ const StudentLogin = () => {
                 type="text"
                 placeholder="Enter class code from teacher"
                 value={classCode}
-                onChange={(e) => setClassCode(e.target.value)}
+                onChange={(e) => setClassCode(e.target.value.toUpperCase())}
                 required
+                className="uppercase"
               />
             </div>
             
