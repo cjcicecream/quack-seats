@@ -19,7 +19,7 @@ const TeacherPreferences = () => {
     prioritize_student_requests: true,
     avoid_large_groups: false,
     balance_personalities: false,
-    separate_disruptive: false,
+    separate_disruptive: true, // Always enabled automatically
     notes: ""
   });
 
@@ -131,22 +131,6 @@ const TeacherPreferences = () => {
               />
             </div>
 
-            <div className="flex items-start justify-between gap-4 py-3 border-b">
-              <div className="space-y-0.5 flex-1 min-w-0">
-                <Label htmlFor="separate">Separate Disruptive Pairs</Label>
-                <p className="text-sm text-muted-foreground">
-                  Keep certain student combinations apart based on "avoid" preferences
-                </p>
-              </div>
-              <Switch
-                id="separate"
-                checked={preferences.separate_disruptive}
-                onCheckedChange={(checked) => 
-                  setPreferences({ ...preferences, separate_disruptive: checked })
-                }
-                className="shrink-0"
-              />
-            </div>
 
             <div className="space-y-2 pt-4">
               <Label htmlFor="notes">Additional Notes</Label>
