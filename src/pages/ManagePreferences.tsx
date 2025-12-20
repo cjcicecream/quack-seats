@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -112,21 +112,21 @@ const ManagePreferences = () => {
   };
 
   // Filter preferences based on search query
-  const filteredPreferences = useMemo(() => {
+  const filteredPreferences = (() => {
     if (!searchQuery.trim()) return preferences;
-    
+
     const query = searchQuery.toLowerCase();
     return preferences.filter((pref) => {
       // Search in student name
       if (pref.students.name.toLowerCase().includes(query)) return true;
-      
+
       // Search in preference choices
       const prefNames = getPreferenceNames(pref);
-      if (prefNames.some(name => name.toLowerCase().includes(query))) return true;
-      
+      if (prefNames.some((name) => name.toLowerCase().includes(query))) return true;
+
       return false;
     });
-  }, [preferences, searchQuery]);
+  })();
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
