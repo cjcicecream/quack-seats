@@ -10,6 +10,11 @@ interface Bubble {
   colorVariant: 'pink' | 'blue' | 'purple';
   isFragment?: boolean;
   isPopping?: boolean;
+  // Variation properties
+  rotation: number;
+  shineOffset: { x: number; y: number };
+  reflectionScale: number;
+  opacity: number;
 }
 
 const colorVariants = ['pink', 'blue', 'purple'] as const;
@@ -36,6 +41,11 @@ const FloatingBubbles = () => {
         delay: Math.random() * 8,
         duration: Math.random() * 3 + 4, // 4-7 seconds (faster)
         colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
+        // Unique variations per bubble
+        rotation: Math.random() * 360,
+        shineOffset: { x: Math.random() * 10 - 5, y: Math.random() * 10 - 5 },
+        reflectionScale: 0.7 + Math.random() * 0.6, // 0.7 to 1.3
+        opacity: 0.85 + Math.random() * 0.15, // 0.85 to 1.0
       };
     });
   });
@@ -158,12 +168,28 @@ const FloatingBubbles = () => {
             bottom: `${bubble.bottom}%`,
             animationDelay: bubble.isPopping ? '0s' : `${bubble.delay}s`,
             animationDuration: bubble.isPopping ? '0.3s' : `${bubble.duration}s`,
+            transform: `rotate(${bubble.rotation}deg)`,
+            opacity: bubble.opacity,
           }}
           onClick={(e) => !bubble.isPopping && handleBubblePop(bubble, e)}
         >
-          <div className="bubble-shine" />
-          <div className="bubble-reflection" />
-          <div className="bubble-reflection-small" />
+          <div 
+            className="bubble-shine" 
+            style={{ 
+              transform: `translate(${bubble.shineOffset.x}%, ${bubble.shineOffset.y}%)`,
+              scale: `${bubble.reflectionScale}`,
+            }} 
+          />
+          <div 
+            className="bubble-reflection" 
+            style={{ scale: `${bubble.reflectionScale * 0.9}` }} 
+          />
+          <div 
+            className="bubble-reflection-small" 
+            style={{ 
+              transform: `translate(${-bubble.shineOffset.x * 2}%, ${bubble.shineOffset.y}%)`,
+            }} 
+          />
         </div>
       ))}
       
