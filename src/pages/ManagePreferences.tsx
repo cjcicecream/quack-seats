@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Search } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface Preference {
@@ -25,6 +26,7 @@ const ManagePreferences = () => {
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     loadPreferences();
@@ -99,12 +101,54 @@ const ManagePreferences = () => {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
+  // Helper to get preference names from preference object
+  const getPreferenceNames = (pref: Preference): string[] => {
+    const prefArray = Array.isArray(pref.preferences) 
+      ? pref.preferences 
+      : pref.preferences?.students;
+    
+    if (Array.isArray(prefArray)) {
+      return prefArray.map((p: any) => 
+        typeof p === 'string' ? p : p.name || ''
+      ).filter(Boolean);
+    }
+    return [];
+  };
+
+  // Filter preferences based on search query
+  const filteredPreferences = useMemo(() => {
+    if (!searchQuery.trim()) return preferences;
+    
+    const query = searchQuery.toLowerCase();
+    return preferences.filter((pref) => {
+      // Search in student name
+      if (pref.students.name.toLowerCase().includes(query)) return true;
+      
+      // Search in preference choices
+      const prefNames = getPreferenceNames(pref);
+      if (prefNames.some(name => name.toLowerCase().includes(query))) return true;
+      
+      return false;
+    });
+  }, [preferences, searchQuery]);
+
   return (
     <div className="p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          🥔Student Preferences🥔
+        <h1 className="text-4xl font-bold mb-6 pb-1 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          🥔 Student Preferences 🥔
         </h1>
+
+        {/* Search bar */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by student name or preference..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
         {preferences.length === 0 ? (
           <Card className="p-12 text-center">
@@ -112,9 +156,15 @@ const ManagePreferences = () => {
               No student preferences submitted yet
             </p>
           </Card>
+        ) : filteredPreferences.length === 0 ? (
+          <Card className="p-12 text-center">
+            <p className="text-muted-foreground text-lg">
+              No results found for "{searchQuery}"
+            </p>
+          </Card>
         ) : (
           <div className="space-y-4">
-            {preferences.map((pref) => {
+            {filteredPreferences.map((pref) => {
               const isExpanded = expandedIds.has(pref.id);
               const hasComment = !!pref.additional_comments;
               
