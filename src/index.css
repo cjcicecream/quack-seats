@@ -107,7 +107,7 @@ All colors MUST be HSL.
   .soap-bubble {
     position: fixed;
     border-radius: 50%;
-    animation: float 20s infinite ease-in-out;
+    animation: float 20s linear infinite;
     z-index: 1;
   }
 
@@ -172,17 +172,14 @@ All colors MUST be HSL.
   }
 
   @keyframes float {
-    0%, 100% {
-      transform: translateY(0) translateX(0) rotate(0deg);
-    }
-    25% {
-      transform: translateY(-150px) translateX(50px) rotate(90deg);
+    0% {
+      transform: translateY(0) translateX(0);
     }
     50% {
-      transform: translateY(-300px) translateX(-30px) rotate(180deg);
+      transform: translateY(-50vh) translateX(15px);
     }
-    75% {
-      transform: translateY(-150px) translateX(-50px) rotate(270deg);
+    100% {
+      transform: translateY(-100vh) translateX(-10px);
     }
   }
 
