@@ -24,6 +24,7 @@ export type Database = {
           id: string
           max_preferences: number | null
           name: string
+          show_seating_to_students: boolean | null
           teacher_id: string
         }
         Insert: {
@@ -35,6 +36,7 @@ export type Database = {
           id?: string
           max_preferences?: number | null
           name: string
+          show_seating_to_students?: boolean | null
           teacher_id: string
         }
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           id?: string
           max_preferences?: number | null
           name?: string
+          show_seating_to_students?: boolean | null
           teacher_id?: string
         }
         Relationships: [
