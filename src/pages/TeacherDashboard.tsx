@@ -76,7 +76,9 @@ const TeacherDashboard = () => {
   const handleCreateClass = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const classCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      // Generate alphanumeric class code (letters and numbers)
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const classCode = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) throw new Error("Not authenticated");
