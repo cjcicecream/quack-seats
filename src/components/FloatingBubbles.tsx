@@ -47,7 +47,7 @@ const FloatingBubbles = () => {
       const now = ctx.currentTime;
       
       // Create noise buffer for the "wet splash" effect
-      const noiseLength = ctx.sampleRate * 0.1;
+      const noiseLength = ctx.sampleRate * 0.08;
       const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
       const noiseData = noiseBuffer.getChannelData(0);
       for (let i = 0; i < noiseLength; i++) {
@@ -58,50 +58,50 @@ const FloatingBubbles = () => {
       const noiseSource = ctx.createBufferSource();
       noiseSource.buffer = noiseBuffer;
       
-      // Bandpass filter to make noise sound "bubbly"
+      // Bandpass filter to make noise sound "bubbly" - higher frequency
       const noiseFilter = ctx.createBiquadFilter();
       noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(2000, now);
-      noiseFilter.Q.setValueAtTime(1, now);
+      noiseFilter.frequency.setValueAtTime(3500, now);
+      noiseFilter.Q.setValueAtTime(1.5, now);
       
       const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.15, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      noiseGain.gain.setValueAtTime(0.06, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       
       noiseSource.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       
-      // Primary "pop" - quick sine burst
+      // Primary "pop" - quick sine burst (higher pitch)
       const pop = ctx.createOscillator();
       const popGain = ctx.createGain();
       pop.type = 'sine';
-      pop.frequency.setValueAtTime(400, now);
-      pop.frequency.exponentialRampToValueAtTime(80, now + 0.06);
-      popGain.gain.setValueAtTime(0.25, now);
-      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      pop.frequency.setValueAtTime(800, now);
+      pop.frequency.exponentialRampToValueAtTime(200, now + 0.04);
+      popGain.gain.setValueAtTime(0.08, now);
+      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
       pop.connect(popGain);
       popGain.connect(ctx.destination);
       
-      // Secondary harmonic for richness
+      // Secondary harmonic for richness (higher pitch)
       const harmonic = ctx.createOscillator();
       const harmonicGain = ctx.createGain();
       harmonic.type = 'sine';
-      harmonic.frequency.setValueAtTime(800, now);
-      harmonic.frequency.exponentialRampToValueAtTime(200, now + 0.04);
-      harmonicGain.gain.setValueAtTime(0.1, now);
-      harmonicGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      harmonic.frequency.setValueAtTime(1400, now);
+      harmonic.frequency.exponentialRampToValueAtTime(400, now + 0.03);
+      harmonicGain.gain.setValueAtTime(0.04, now);
+      harmonicGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
       harmonic.connect(harmonicGain);
       harmonicGain.connect(ctx.destination);
       
-      // "Plop" low frequency for body
+      // "Plop" mid frequency for body (higher pitch)
       const plop = ctx.createOscillator();
       const plopGain = ctx.createGain();
       plop.type = 'sine';
-      plop.frequency.setValueAtTime(150, now);
-      plop.frequency.exponentialRampToValueAtTime(50, now + 0.1);
-      plopGain.gain.setValueAtTime(0.2, now);
-      plopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      plop.frequency.setValueAtTime(350, now);
+      plop.frequency.exponentialRampToValueAtTime(120, now + 0.06);
+      plopGain.gain.setValueAtTime(0.06, now);
+      plopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       plop.connect(plopGain);
       plopGain.connect(ctx.destination);
       
@@ -112,10 +112,10 @@ const FloatingBubbles = () => {
       plop.start(now);
       
       // Stop all sounds
-      noiseSource.stop(now + 0.1);
-      pop.stop(now + 0.1);
-      harmonic.stop(now + 0.1);
-      plop.stop(now + 0.15);
+      noiseSource.stop(now + 0.08);
+      pop.stop(now + 0.06);
+      harmonic.stop(now + 0.06);
+      plop.stop(now + 0.1);
     } catch (error) {
       console.log('Audio not supported');
     }
