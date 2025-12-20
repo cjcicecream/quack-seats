@@ -53,7 +53,7 @@ const FloatingBubbles = () => {
   const [nextId, setNextId] = useState(10);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Create a crisp, classic bubble pop sound using Web Audio API
+  // Classic bubble pop sound - quick, snappy "pop" like the sound effect video
   const playPopSound = useCallback(() => {
     try {
       if (!audioContextRef.current) {
@@ -62,75 +62,73 @@ const FloatingBubbles = () => {
       const ctx = audioContextRef.current;
       const now = ctx.currentTime;
       
-      // Sharp initial "pop" click - high frequency burst
-      const pop = ctx.createOscillator();
-      const popGain = ctx.createGain();
-      pop.type = 'sine';
-      pop.frequency.setValueAtTime(1200, now);
-      pop.frequency.exponentialRampToValueAtTime(300, now + 0.05);
-      popGain.gain.setValueAtTime(0.15, now);
-      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-      pop.connect(popGain);
-      popGain.connect(ctx.destination);
+      // Main pop - quick descending "bloop" sound
+      const mainPop = ctx.createOscillator();
+      const mainGain = ctx.createGain();
+      mainPop.type = 'sine';
+      mainPop.frequency.setValueAtTime(800, now);
+      mainPop.frequency.exponentialRampToValueAtTime(150, now + 0.06);
+      mainGain.gain.setValueAtTime(0.3, now);
+      mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      mainPop.connect(mainGain);
+      mainGain.connect(ctx.destination);
       
-      // "Plop" body - descending tone
-      const plop = ctx.createOscillator();
-      const plopGain = ctx.createGain();
-      plop.type = 'sine';
-      plop.frequency.setValueAtTime(500, now);
-      plop.frequency.exponentialRampToValueAtTime(100, now + 0.08);
-      plopGain.gain.setValueAtTime(0.12, now);
-      plopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      plop.connect(plopGain);
-      plopGain.connect(ctx.destination);
+      // Quick attack click for the initial "pop" snap
+      const click = ctx.createOscillator();
+      const clickGain = ctx.createGain();
+      click.type = 'square';
+      click.frequency.setValueAtTime(1500, now);
+      click.frequency.exponentialRampToValueAtTime(400, now + 0.015);
+      clickGain.gain.setValueAtTime(0.12, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+      click.connect(clickGain);
+      clickGain.connect(ctx.destination);
       
-      // High harmonic for brightness
-      const bright = ctx.createOscillator();
-      const brightGain = ctx.createGain();
-      bright.type = 'sine';
-      bright.frequency.setValueAtTime(2000, now);
-      bright.frequency.exponentialRampToValueAtTime(600, now + 0.03);
-      brightGain.gain.setValueAtTime(0.06, now);
-      brightGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-      bright.connect(brightGain);
-      brightGain.connect(ctx.destination);
+      // Subtle wet/watery undertone
+      const wet = ctx.createOscillator();
+      const wetGain = ctx.createGain();
+      wet.type = 'sine';
+      wet.frequency.setValueAtTime(350, now);
+      wet.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+      wetGain.gain.setValueAtTime(0.08, now + 0.01);
+      wetGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      wet.connect(wetGain);
+      wetGain.connect(ctx.destination);
       
-      // Short noise burst for the "air release" texture
-      const noiseLength = ctx.sampleRate * 0.04;
+      // Very short noise for air burst
+      const noiseLength = ctx.sampleRate * 0.02;
       const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
       const noiseData = noiseBuffer.getChannelData(0);
       for (let i = 0; i < noiseLength; i++) {
-        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 2);
+        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 3);
       }
       
       const noiseSource = ctx.createBufferSource();
       noiseSource.buffer = noiseBuffer;
       
-      // Bandpass filter for crisp bubble texture
       const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(2500, now);
-      noiseFilter.Q.setValueAtTime(1, now);
+      noiseFilter.type = 'highpass';
+      noiseFilter.frequency.setValueAtTime(2000, now);
       
       const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.08, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      noiseGain.gain.setValueAtTime(0.1, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
       
       noiseSource.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       
-      // Start all sounds
-      pop.start(now);
-      plop.start(now);
-      bright.start(now);
+      // Start all
+      mainPop.start(now);
+      click.start(now);
+      wet.start(now);
       noiseSource.start(now);
       
-      // Stop all sounds
-      pop.stop(now + 0.06);
-      plop.stop(now + 0.1);
-      bright.stop(now + 0.05);
-      noiseSource.stop(now + 0.05);
+      // Stop all
+      mainPop.stop(now + 0.08);
+      click.stop(now + 0.02);
+      wet.stop(now + 0.1);
+      noiseSource.stop(now + 0.03);
     } catch (error) {
       console.log('Audio not supported');
     }
