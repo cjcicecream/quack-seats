@@ -6,14 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 
 interface ClassSettings {
   name: string;
   max_preferences: number;
   allow_gender_preference: boolean;
-  allow_seating_position: boolean;
-  allow_avoid_students: boolean;
+  prioritize_teacher_preferences: boolean;
 }
 
 const ClassSettings = () => {
@@ -25,8 +25,7 @@ const ClassSettings = () => {
     name: "",
     max_preferences: 3,
     allow_gender_preference: false,
-    allow_seating_position: false,
-    allow_avoid_students: false,
+    prioritize_teacher_preferences: false,
   });
 
   useEffect(() => {
@@ -37,7 +36,7 @@ const ClassSettings = () => {
     try {
       const { data, error } = await supabase
         .from("classes")
-        .select("name, max_preferences, allow_gender_preference, allow_seating_position, allow_avoid_students")
+        .select("name, max_preferences, allow_gender_preference, prioritize_teacher_preferences")
         .eq("id", classId)
         .single();
 
@@ -47,8 +46,7 @@ const ClassSettings = () => {
           name: data.name,
           max_preferences: data.max_preferences || 3,
           allow_gender_preference: data.allow_gender_preference || false,
-          allow_seating_position: data.allow_seating_position || false,
-          allow_avoid_students: data.allow_avoid_students || false,
+          prioritize_teacher_preferences: (data as any).prioritize_teacher_preferences || false,
         });
       }
     } catch (error: any) {
@@ -67,9 +65,8 @@ const ClassSettings = () => {
         .update({
           max_preferences: settings.max_preferences,
           allow_gender_preference: settings.allow_gender_preference,
-          allow_seating_position: settings.allow_seating_position,
-          allow_avoid_students: settings.allow_avoid_students,
-        })
+          prioritize_teacher_preferences: settings.prioritize_teacher_preferences,
+        } as any)
         .eq("id", classId);
 
       if (error) throw error;
@@ -129,32 +126,35 @@ const ClassSettings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between space-x-4 py-3 border-b">
-              <div className="space-y-0.5">
-                <Label htmlFor="seatingPosition">Allow Seating Position Preferences</Label>
-                <p className="text-sm text-muted-foreground">
-                  Students can indicate preferred classroom locations (front, back, near window, etc.)
-                </p>
-              </div>
-              <Switch
-                id="seatingPosition"
-                checked={settings.allow_seating_position}
-                onCheckedChange={(checked) => setSettings({ ...settings, allow_seating_position: checked })}
-              />
-            </div>
-
-            <div className="flex items-center justify-between space-x-4 py-3">
-              <div className="space-y-0.5">
-                <Label htmlFor="avoidStudents">Allow "Avoid" Preferences</Label>
-                <p className="text-sm text-muted-foreground">
-                  Students can specify classmates they prefer NOT to sit near
-                </p>
-              </div>
-              <Switch
-                id="avoidStudents"
-                checked={settings.allow_avoid_students}
-                onCheckedChange={(checked) => setSettings({ ...settings, allow_avoid_students: checked })}
-              />
+            <div className="space-y-3 py-3">
+              <Label>Preference Priority</Label>
+              <p className="text-sm text-muted-foreground mb-3">
+                When generating seating arrangements, which preferences should take priority?
+              </p>
+              <RadioGroup
+                value={settings.prioritize_teacher_preferences ? "teacher" : "student"}
+                onValueChange={(value) => setSettings({ ...settings, prioritize_teacher_preferences: value === "teacher" })}
+                className="space-y-3"
+              >
+                <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="student" id="student-priority" />
+                  <Label htmlFor="student-priority" className="flex-1 cursor-pointer">
+                    <span className="font-medium">Prioritize Student Preferences</span>
+                    <p className="text-sm text-muted-foreground font-normal">
+                      Student choices take precedence when arranging seats
+                    </p>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="teacher" id="teacher-priority" />
+                  <Label htmlFor="teacher-priority" className="flex-1 cursor-pointer">
+                    <span className="font-medium">Prioritize Teacher Preferences</span>
+                    <p className="text-sm text-muted-foreground font-normal">
+                      Teacher-defined arrangements take precedence
+                    </p>
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
 
             <div className="flex gap-4 pt-4">

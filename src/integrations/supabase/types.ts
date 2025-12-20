@@ -24,6 +24,7 @@ export type Database = {
           id: string
           max_preferences: number | null
           name: string
+          prioritize_teacher_preferences: boolean | null
           show_seating_to_students: boolean | null
           teacher_id: string
         }
@@ -36,6 +37,7 @@ export type Database = {
           id?: string
           max_preferences?: number | null
           name: string
+          prioritize_teacher_preferences?: boolean | null
           show_seating_to_students?: boolean | null
           teacher_id: string
         }
@@ -48,6 +50,7 @@ export type Database = {
           id?: string
           max_preferences?: number | null
           name?: string
+          prioritize_teacher_preferences?: boolean | null
           show_seating_to_students?: boolean | null
           teacher_id?: string
         }
