@@ -1,16 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import DuckAvatar from "@/components/DuckAvatar";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Heart } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 interface Arrangement {
   id: string;
   arrangement: any;
   created_at: string;
+}
+
+interface StudentPreference {
+  student_id: string;
+  preferences: any;
+  students: { name: string };
 }
 
 const SeatingChart = () => {
@@ -19,9 +26,11 @@ const SeatingChart = () => {
   const [arrangements, setArrangements] = useState<Arrangement[]>([]);
   const [currentArrangement, setCurrentArrangement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [studentPreferences, setStudentPreferences] = useState<StudentPreference[]>([]);
 
   useEffect(() => {
     loadArrangements();
+    loadPreferences();
   }, [classId]);
 
   const loadArrangements = async () => {
@@ -44,6 +53,71 @@ const SeatingChart = () => {
       setLoading(false);
     }
   };
+
+  const loadPreferences = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("student_preferences")
+        .select("student_id, preferences, students(name)")
+        .eq("class_id", classId);
+
+      if (error) throw error;
+      setStudentPreferences(data || []);
+    } catch (error: any) {
+      console.error("Failed to load preferences:", error);
+    }
+  };
+
+  // Calculate preference satisfaction percentage
+  const preferenceStats = useMemo(() => {
+    if (!currentArrangement?.tables || studentPreferences.length === 0) {
+      return { percentage: 0, satisfied: 0, total: 0 };
+    }
+
+    // Build a map of student name -> table index
+    const studentTableMap: Record<string, number> = {};
+    currentArrangement.tables.forEach((table: any, tableIndex: number) => {
+      table.seats?.forEach((seat: any) => {
+        if (seat.student?.name) {
+          studentTableMap[seat.student.name.toLowerCase()] = tableIndex;
+        }
+      });
+    });
+
+    let totalPreferences = 0;
+    let satisfiedPreferences = 0;
+
+    studentPreferences.forEach((pref) => {
+      const studentName = pref.students?.name?.toLowerCase();
+      const studentTable = studentTableMap[studentName];
+      
+      if (studentTable === undefined) return;
+
+      // Get preference array (handle both formats)
+      const prefArray = Array.isArray(pref.preferences) 
+        ? pref.preferences 
+        : pref.preferences?.students;
+
+      if (!Array.isArray(prefArray)) return;
+
+      prefArray.forEach((p: any) => {
+        const prefName = (typeof p === 'string' ? p : p.name)?.toLowerCase();
+        if (!prefName) return;
+        
+        totalPreferences++;
+        const prefTable = studentTableMap[prefName];
+        if (prefTable === studentTable) {
+          satisfiedPreferences++;
+        }
+      });
+    });
+
+    const percentage = totalPreferences > 0 
+      ? Math.round((satisfiedPreferences / totalPreferences) * 100) 
+      : 0;
+
+    return { percentage, satisfied: satisfiedPreferences, total: totalPreferences };
+  }, [currentArrangement, studentPreferences]);
 
   const generateNewArrangement = async () => {
     setLoading(true);
@@ -167,12 +241,31 @@ const SeatingChart = () => {
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </Card>
+          ))}
+        </div>
+        
+        {/* Preference satisfaction stats */}
+        {preferenceStats.total > 0 && (
+          <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Heart className="h-5 w-5 text-pink-500" />
+              <span className="font-semibold">Preferences Met</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Progress value={preferenceStats.percentage} className="flex-1 h-3" />
+              <span className="text-lg font-bold min-w-[60px] text-right">
+                {preferenceStats.percentage}%
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              {preferenceStats.satisfied} of {preferenceStats.total} student preferences satisfied
+            </p>
+          </div>
+        )}
+      </Card>
         ) : (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground text-lg mb-4">
