@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { LogOut } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -25,12 +25,22 @@ export function TeacherLayout({ children }: TeacherLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <button 
-          onClick={() => navigate("/")}
-          className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
-        >
-          🥔potato groups🥔
-        </button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <button 
+            onClick={() => navigate("/")}
+            className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+          >
+            🥔potato groups🥔
+          </button>
+        </div>
         
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={handleLogout}>
