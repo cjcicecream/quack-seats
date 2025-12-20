@@ -97,10 +97,6 @@ const ManagePreferences = () => {
     });
   };
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
   // Helper to get preference names from preference object
   const getPreferenceNames = (pref: Preference): string[] => {
     const prefArray = Array.isArray(pref.preferences) 
@@ -131,6 +127,10 @@ const ManagePreferences = () => {
       return false;
     });
   }, [preferences, searchQuery]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="p-4 md:p-8">
