@@ -31,7 +31,7 @@ const FloatingBubbles = () => {
   const [nextId, setNextId] = useState(12);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Create a natural, soft bubble pop sound using Web Audio API
+  // Create a crisp, classic bubble pop sound using Web Audio API
   const playPopSound = useCallback(() => {
     try {
       if (!audioContextRef.current) {
@@ -40,63 +40,75 @@ const FloatingBubbles = () => {
       const ctx = audioContextRef.current;
       const now = ctx.currentTime;
       
-      // Main soft "bloop" - low frequency for that underwater bubble feel
-      const bloop = ctx.createOscillator();
-      const bloopGain = ctx.createGain();
-      bloop.type = 'sine';
-      bloop.frequency.setValueAtTime(400, now);
-      bloop.frequency.exponentialRampToValueAtTime(80, now + 0.12);
-      bloopGain.gain.setValueAtTime(0.08, now);
-      bloopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-      bloop.connect(bloopGain);
-      bloopGain.connect(ctx.destination);
+      // Sharp initial "pop" click - high frequency burst
+      const pop = ctx.createOscillator();
+      const popGain = ctx.createGain();
+      pop.type = 'sine';
+      pop.frequency.setValueAtTime(1200, now);
+      pop.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+      popGain.gain.setValueAtTime(0.15, now);
+      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      pop.connect(popGain);
+      popGain.connect(ctx.destination);
       
-      // Soft water droplet overtone
-      const droplet = ctx.createOscillator();
-      const dropletGain = ctx.createGain();
-      droplet.type = 'sine';
-      droplet.frequency.setValueAtTime(600, now);
-      droplet.frequency.exponentialRampToValueAtTime(150, now + 0.08);
-      dropletGain.gain.setValueAtTime(0.03, now);
-      dropletGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      droplet.connect(dropletGain);
-      dropletGain.connect(ctx.destination);
+      // "Plop" body - descending tone
+      const plop = ctx.createOscillator();
+      const plopGain = ctx.createGain();
+      plop.type = 'sine';
+      plop.frequency.setValueAtTime(500, now);
+      plop.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+      plopGain.gain.setValueAtTime(0.12, now);
+      plopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      plop.connect(plopGain);
+      plopGain.connect(ctx.destination);
       
-      // Very soft filtered noise for gentle "air release" texture
-      const noiseLength = ctx.sampleRate * 0.06;
+      // High harmonic for brightness
+      const bright = ctx.createOscillator();
+      const brightGain = ctx.createGain();
+      bright.type = 'sine';
+      bright.frequency.setValueAtTime(2000, now);
+      bright.frequency.exponentialRampToValueAtTime(600, now + 0.03);
+      brightGain.gain.setValueAtTime(0.06, now);
+      brightGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      bright.connect(brightGain);
+      brightGain.connect(ctx.destination);
+      
+      // Short noise burst for the "air release" texture
+      const noiseLength = ctx.sampleRate * 0.04;
       const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
       const noiseData = noiseBuffer.getChannelData(0);
       for (let i = 0; i < noiseLength; i++) {
-        // Softer exponential decay
-        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 4);
+        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 2);
       }
       
       const noiseSource = ctx.createBufferSource();
       noiseSource.buffer = noiseBuffer;
       
-      // Low-pass filter for soft, muffled sound
+      // Bandpass filter for crisp bubble texture
       const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = 'lowpass';
-      noiseFilter.frequency.setValueAtTime(1200, now);
-      noiseFilter.Q.setValueAtTime(0.5, now);
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.setValueAtTime(2500, now);
+      noiseFilter.Q.setValueAtTime(1, now);
       
       const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.025, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      noiseGain.gain.setValueAtTime(0.08, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
       
       noiseSource.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       
       // Start all sounds
-      bloop.start(now);
-      droplet.start(now);
+      pop.start(now);
+      plop.start(now);
+      bright.start(now);
       noiseSource.start(now);
       
       // Stop all sounds
-      bloop.stop(now + 0.15);
-      droplet.stop(now + 0.1);
-      noiseSource.stop(now + 0.08);
+      pop.stop(now + 0.06);
+      plop.stop(now + 0.1);
+      bright.stop(now + 0.05);
+      noiseSource.stop(now + 0.05);
     } catch (error) {
       console.log('Audio not supported');
     }
