@@ -44,7 +44,7 @@ const Home = () => {
               Submit your seating preferences and see where you'll sit!
             </p>
             <Button
-              variant="secondary"
+              variant="playfulSecondary"
               size="lg"
               className="w-full"
               onClick={() => navigate("/student/login")}
