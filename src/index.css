@@ -172,14 +172,17 @@ All colors MUST be HSL.
   }
 
   @keyframes float {
-    0% {
+    0%, 100% {
       transform: translateY(0) translateX(0);
     }
-    50% {
-      transform: translateY(-50vh) translateX(15px);
+    25% {
+      transform: translateY(-30px) translateX(15px);
     }
-    100% {
-      transform: translateY(-100vh) translateX(-10px);
+    50% {
+      transform: translateY(-50px) translateX(-10px);
+    }
+    75% {
+      transform: translateY(-20px) translateX(-20px);
     }
   }
 
