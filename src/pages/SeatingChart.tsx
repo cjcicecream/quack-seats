@@ -119,6 +119,93 @@ const SeatingChart = () => {
     return { percentage, satisfied: satisfiedPreferences, total: totalPreferences };
   }, [currentArrangement, studentPreferences]);
 
+  // Smart seating algorithm that tries to maximize preference satisfaction
+  const optimizeSeating = (students: any[], tables: any[], preferences: StudentPreference[]) => {
+    // Build preference graph: studentName -> list of preferred names
+    const prefGraph: Record<string, string[]> = {};
+    preferences.forEach((pref) => {
+      const studentName = pref.students?.name?.toLowerCase();
+      if (!studentName) return;
+      
+      const prefArray = Array.isArray(pref.preferences) 
+        ? pref.preferences 
+        : pref.preferences?.students;
+      
+      if (Array.isArray(prefArray)) {
+        prefGraph[studentName] = prefArray
+          .map((p: any) => (typeof p === 'string' ? p : p.name)?.toLowerCase())
+          .filter(Boolean);
+      }
+    });
+
+    // Calculate affinity score between two students (mutual preferences = higher)
+    const getAffinity = (s1: string, s2: string): number => {
+      let score = 0;
+      if (prefGraph[s1]?.includes(s2)) score += 1;
+      if (prefGraph[s2]?.includes(s1)) score += 1;
+      return score;
+    };
+
+    // Get table capacities
+    const tableCapacities = tables.map((t: any) => t.seats?.length || 0);
+    const totalSeats = tableCapacities.reduce((a: number, b: number) => a + b, 0);
+    
+    // Start with unassigned students
+    const unassigned = [...students];
+    const tableAssignments: any[][] = tables.map(() => []);
+
+    // Greedy assignment: for each table, try to fill with students who prefer each other
+    for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
+      const capacity = tableCapacities[tableIdx];
+      
+      while (tableAssignments[tableIdx].length < capacity && unassigned.length > 0) {
+        if (tableAssignments[tableIdx].length === 0) {
+          // First student: pick the one with most preferences to fill (most connected)
+          let bestIdx = 0;
+          let bestConnections = 0;
+          unassigned.forEach((s, idx) => {
+            const name = s.name?.toLowerCase();
+            const connections = prefGraph[name]?.length || 0;
+            if (connections > bestConnections) {
+              bestConnections = connections;
+              bestIdx = idx;
+            }
+          });
+          tableAssignments[tableIdx].push(unassigned.splice(bestIdx, 1)[0]);
+        } else {
+          // Find student with highest affinity to current table members
+          let bestIdx = 0;
+          let bestScore = -1;
+          
+          unassigned.forEach((candidate, idx) => {
+            const candidateName = candidate.name?.toLowerCase();
+            let score = 0;
+            tableAssignments[tableIdx].forEach((seated: any) => {
+              score += getAffinity(candidateName, seated.name?.toLowerCase());
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              bestIdx = idx;
+            }
+          });
+          
+          tableAssignments[tableIdx].push(unassigned.splice(bestIdx, 1)[0]);
+        }
+      }
+    }
+
+    // Build final arrangement
+    return {
+      tables: tables.map((table: any, tableIdx: number) => ({
+        ...table,
+        seats: table.seats.map((seat: any, seatIdx: number) => ({
+          ...seat,
+          student: tableAssignments[tableIdx][seatIdx] || null,
+        })),
+      })),
+    };
+  };
+
   const generateNewArrangement = async () => {
     setLoading(true);
     try {
@@ -139,7 +226,6 @@ const SeatingChart = () => {
 
       // If there's an existing arrangement, use the same students
       if (currentArrangement && currentArrangement.tables) {
-        // Extract students from the previous arrangement
         currentArrangement.tables.forEach((table: any) => {
           if (table.seats) {
             table.seats.forEach((seat: any) => {
@@ -166,25 +252,38 @@ const SeatingChart = () => {
         studentsToUse = students;
       }
 
-      // Shuffle the students for a new random arrangement
-      const shuffled = [...studentsToUse].sort(() => Math.random() - 0.5);
+      // Fetch fresh preferences
+      const { data: prefs } = await supabase
+        .from("student_preferences")
+        .select("student_id, preferences, students(name)")
+        .eq("class_id", classId);
+
       const layoutData = layout.layout as any;
       const tables = layoutData.tables || [];
       
-      let studentIndex = 0;
-      const arrangement = {
-        tables: tables.map((table: any) => ({
-          ...table,
-          seats: table.seats.map((seat: any) => {
-            const student = shuffled[studentIndex] || null;
-            if (student) studentIndex++;
-            return {
-              ...seat,
-              student,
-            };
-          }),
-        })),
-      };
+      // Use smart algorithm if we have preferences, otherwise random
+      let arrangement;
+      if (prefs && prefs.length > 0) {
+        // Shuffle students first to add randomness, then optimize
+        const shuffled = [...studentsToUse].sort(() => Math.random() - 0.5);
+        arrangement = optimizeSeating(shuffled, tables, prefs as StudentPreference[]);
+        toast.success("Smart seating arrangement generated!");
+      } else {
+        // Fallback to random
+        const shuffled = [...studentsToUse].sort(() => Math.random() - 0.5);
+        let studentIndex = 0;
+        arrangement = {
+          tables: tables.map((table: any) => ({
+            ...table,
+            seats: table.seats.map((seat: any) => {
+              const student = shuffled[studentIndex] || null;
+              if (student) studentIndex++;
+              return { ...seat, student };
+            }),
+          })),
+        };
+        toast.success("Random seating arrangement generated!");
+      }
 
       const { error } = await supabase
         .from("seating_arrangements")
@@ -195,7 +294,6 @@ const SeatingChart = () => {
 
       if (error) throw error;
       
-      toast.success("New seating arrangement generated!");
       loadArrangements();
     } catch (error: any) {
       toast.error(error.message || "Failed to generate arrangement");
