@@ -17,7 +17,7 @@ const colorVariants = ['pink', 'blue', 'purple'] as const;
 
 const FloatingBubbles = () => {
   const [bubbles, setBubbles] = useState<Bubble[]>(() => {
-    const bubbleCount = 15;
+    const bubbleCount = 10;
     const cols = 5;
     const rows = Math.ceil(bubbleCount / cols);
     
@@ -34,13 +34,13 @@ const FloatingBubbles = () => {
         left: col * cellWidth + Math.random() * cellWidth * 0.8,
         bottom: row * cellHeight + Math.random() * cellHeight * 0.8,
         delay: Math.random() * 8,
-        duration: Math.random() * 4 + 5, // 5-9 seconds (faster)
+        duration: Math.random() * 3 + 4, // 4-7 seconds (faster)
         colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
       };
     });
   });
 
-  const [nextId, setNextId] = useState(15);
+  const [nextId, setNextId] = useState(10);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // Create a crisp, classic bubble pop sound using Web Audio API
