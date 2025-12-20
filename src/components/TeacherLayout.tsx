@@ -28,10 +28,7 @@ export function TeacherLayout({ children }: TeacherLayoutProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => {
-              toast.info("Going back");
-              navigate("/teacher/dashboard");
-            }}
+            onClick={() => navigate("/teacher/dashboard")}
             className="inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
             aria-label="Back to dashboard"
           >
