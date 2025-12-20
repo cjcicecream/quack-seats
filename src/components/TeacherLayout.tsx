@@ -29,7 +29,9 @@ export function TeacherLayout({ children }: TeacherLayoutProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(-1)}
+            onClick={() =>
+              window.history.length > 1 ? navigate(-1) : navigate("/teacher/dashboard")
+            }
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
