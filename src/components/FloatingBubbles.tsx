@@ -27,7 +27,7 @@ const FloatingBubbles = () => {
   const [nextId, setNextId] = useState(12);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Create a natural bubble pop sound using Web Audio API
+  // Create a natural, soft bubble pop sound using Web Audio API
   const playPopSound = useCallback(() => {
     try {
       if (!audioContextRef.current) {
@@ -36,76 +36,63 @@ const FloatingBubbles = () => {
       const ctx = audioContextRef.current;
       const now = ctx.currentTime;
       
-      // Create noise buffer for the "wet splash" effect
-      const noiseLength = ctx.sampleRate * 0.08;
+      // Main soft "bloop" - low frequency for that underwater bubble feel
+      const bloop = ctx.createOscillator();
+      const bloopGain = ctx.createGain();
+      bloop.type = 'sine';
+      bloop.frequency.setValueAtTime(400, now);
+      bloop.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+      bloopGain.gain.setValueAtTime(0.08, now);
+      bloopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      bloop.connect(bloopGain);
+      bloopGain.connect(ctx.destination);
+      
+      // Soft water droplet overtone
+      const droplet = ctx.createOscillator();
+      const dropletGain = ctx.createGain();
+      droplet.type = 'sine';
+      droplet.frequency.setValueAtTime(600, now);
+      droplet.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+      dropletGain.gain.setValueAtTime(0.03, now);
+      dropletGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      droplet.connect(dropletGain);
+      dropletGain.connect(ctx.destination);
+      
+      // Very soft filtered noise for gentle "air release" texture
+      const noiseLength = ctx.sampleRate * 0.06;
       const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
       const noiseData = noiseBuffer.getChannelData(0);
       for (let i = 0; i < noiseLength; i++) {
-        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 3);
+        // Softer exponential decay
+        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 4);
       }
       
-      // Noise source for splash texture
       const noiseSource = ctx.createBufferSource();
       noiseSource.buffer = noiseBuffer;
       
-      // Bandpass filter to make noise sound "bubbly" - higher frequency
+      // Low-pass filter for soft, muffled sound
       const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(3500, now);
-      noiseFilter.Q.setValueAtTime(1.5, now);
+      noiseFilter.type = 'lowpass';
+      noiseFilter.frequency.setValueAtTime(1200, now);
+      noiseFilter.Q.setValueAtTime(0.5, now);
       
       const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.06, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      noiseGain.gain.setValueAtTime(0.025, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
       
       noiseSource.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       
-      // Primary "pop" - quick sine burst (higher pitch)
-      const pop = ctx.createOscillator();
-      const popGain = ctx.createGain();
-      pop.type = 'sine';
-      pop.frequency.setValueAtTime(800, now);
-      pop.frequency.exponentialRampToValueAtTime(200, now + 0.04);
-      popGain.gain.setValueAtTime(0.08, now);
-      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-      pop.connect(popGain);
-      popGain.connect(ctx.destination);
-      
-      // Secondary harmonic for richness (higher pitch)
-      const harmonic = ctx.createOscillator();
-      const harmonicGain = ctx.createGain();
-      harmonic.type = 'sine';
-      harmonic.frequency.setValueAtTime(1400, now);
-      harmonic.frequency.exponentialRampToValueAtTime(400, now + 0.03);
-      harmonicGain.gain.setValueAtTime(0.04, now);
-      harmonicGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-      harmonic.connect(harmonicGain);
-      harmonicGain.connect(ctx.destination);
-      
-      // "Plop" mid frequency for body (higher pitch)
-      const plop = ctx.createOscillator();
-      const plopGain = ctx.createGain();
-      plop.type = 'sine';
-      plop.frequency.setValueAtTime(350, now);
-      plop.frequency.exponentialRampToValueAtTime(120, now + 0.06);
-      plopGain.gain.setValueAtTime(0.06, now);
-      plopGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-      plop.connect(plopGain);
-      plopGain.connect(ctx.destination);
-      
       // Start all sounds
+      bloop.start(now);
+      droplet.start(now);
       noiseSource.start(now);
-      pop.start(now);
-      harmonic.start(now);
-      plop.start(now);
       
       // Stop all sounds
+      bloop.stop(now + 0.15);
+      droplet.stop(now + 0.1);
       noiseSource.stop(now + 0.08);
-      pop.stop(now + 0.06);
-      harmonic.stop(now + 0.06);
-      plop.stop(now + 0.1);
     } catch (error) {
       console.log('Audio not supported');
     }
