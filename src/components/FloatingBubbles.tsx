@@ -16,19 +16,31 @@ const colorVariants = ['pink', 'blue', 'purple'] as const;
 
 
 const FloatingBubbles = () => {
-  const [bubbles, setBubbles] = useState<Bubble[]>(() =>
-    Array.from({ length: 12 }, (_, i) => ({
-      id: i,
-      size: Math.random() * 80 + 40,
-      left: Math.random() * 100,
-      bottom: Math.random() * 100, // Start scattered across the screen
-      delay: Math.random() * 5,
-      duration: Math.random() * 10 + 12,
-      colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
-    }))
-  );
+  const [bubbles, setBubbles] = useState<Bubble[]>(() => {
+    const bubbleCount = 24;
+    const cols = 6;
+    const rows = Math.ceil(bubbleCount / cols);
+    
+    return Array.from({ length: bubbleCount }, (_, i) => {
+      // Grid-based distribution with randomness for natural feel
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cellWidth = 100 / cols;
+      const cellHeight = 100 / rows;
+      
+      return {
+        id: i,
+        size: Math.random() * 60 + 50, // 50-110px
+        left: col * cellWidth + Math.random() * cellWidth * 0.8,
+        bottom: row * cellHeight + Math.random() * cellHeight * 0.8,
+        delay: Math.random() * 8,
+        duration: Math.random() * 12 + 15,
+        colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
+      };
+    });
+  });
 
-  const [nextId, setNextId] = useState(12);
+  const [nextId, setNextId] = useState(24);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // Create a crisp, classic bubble pop sound using Web Audio API
