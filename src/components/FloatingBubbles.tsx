@@ -19,11 +19,11 @@ const FloatingBubbles = () => {
   const [bubbles, setBubbles] = useState<Bubble[]>(() =>
     Array.from({ length: 12 }, (_, i) => ({
       id: i,
-      size: Math.random() * 120 + 40,
+      size: Math.random() * 80 + 40,
       left: Math.random() * 100,
-      bottom: -(Math.random() * 120 + 40),
-      delay: Math.random() * 10,
-      duration: Math.random() * 10 + 15,
+      bottom: Math.random() * 100, // Start scattered across the screen
+      delay: Math.random() * 5,
+      duration: Math.random() * 10 + 12,
       colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
     }))
   );
@@ -132,11 +132,11 @@ const FloatingBubbles = () => {
       // Spawn a new bubble to replace the popped one
       const newBubble: Bubble = {
         id: nextId,
-        size: Math.random() * 120 + 40,
+        size: Math.random() * 80 + 40,
         left: Math.random() * 100,
-        bottom: -(Math.random() * 120 + 40),
+        bottom: -10, // Start below screen
         delay: 0,
-        duration: Math.random() * 10 + 15,
+        duration: Math.random() * 10 + 12,
         colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
       };
       setNextId(prev => prev + 1);
@@ -156,7 +156,7 @@ const FloatingBubbles = () => {
             width: `${bubble.size}px`,
             height: `${bubble.size}px`,
             left: `${bubble.left}%`,
-            bottom: bubble.isFragment ? `${bubble.bottom}px` : `-${bubble.size}px`,
+            bottom: `${bubble.bottom}%`,
             animationDelay: bubble.isPopping ? '0s' : `${bubble.delay}s`,
             animationDuration: bubble.isPopping ? '0.3s' : `${bubble.duration}s`,
           }}
