@@ -48,39 +48,65 @@ const SeatingChart = () => {
   const generateNewArrangement = async () => {
     setLoading(true);
     try {
-      // This is a simplified auto-generation
-      // In production, you'd want a more sophisticated algorithm
-      const { data: students } = await supabase
-        .from("students")
-        .select("*")
-        .eq("class_id", classId);
-
       const { data: layout } = await supabase
         .from("table_layouts")
         .select("*")
         .eq("class_id", classId)
         .eq("is_active", true)
-        .single();
+        .maybeSingle();
 
-      if (!students || !layout) {
-        toast.error("Please set up table layout and add students first");
+      if (!layout) {
+        toast.error("Please set up table layout first");
         setLoading(false);
         return;
       }
 
-      // Simple random arrangement
-      const shuffled = [...students].sort(() => Math.random() - 0.5);
+      let studentsToUse: any[] = [];
+
+      // If there's an existing arrangement, use the same students
+      if (currentArrangement && currentArrangement.tables) {
+        // Extract students from the previous arrangement
+        currentArrangement.tables.forEach((table: any) => {
+          if (table.seats) {
+            table.seats.forEach((seat: any) => {
+              if (seat.student) {
+                studentsToUse.push(seat.student);
+              }
+            });
+          }
+        });
+      }
+
+      // If no previous arrangement or no students found, fetch from database
+      if (studentsToUse.length === 0) {
+        const { data: students } = await supabase
+          .from("students")
+          .select("*")
+          .eq("class_id", classId);
+
+        if (!students || students.length === 0) {
+          toast.error("Please add students first");
+          setLoading(false);
+          return;
+        }
+        studentsToUse = students;
+      }
+
+      // Shuffle the students for a new random arrangement
+      const shuffled = [...studentsToUse].sort(() => Math.random() - 0.5);
       const layoutData = layout.layout as any;
       const tables = layoutData.tables || [];
       
+      let studentIndex = 0;
       const arrangement = {
-        tables: tables.map((table: any, index: number) => ({
+        tables: tables.map((table: any) => ({
           ...table,
-          seats: table.seats.map((seat: any, seatIndex: number) => {
-            const studentIndex = index * table.seats.length + seatIndex;
+          seats: table.seats.map((seat: any) => {
+            const student = shuffled[studentIndex] || null;
+            if (student) studentIndex++;
             return {
               ...seat,
-              student: shuffled[studentIndex] || null,
+              student,
             };
           }),
         })),

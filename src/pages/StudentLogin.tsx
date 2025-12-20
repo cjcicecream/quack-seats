@@ -63,6 +63,8 @@ const StudentLogin = () => {
         s => s.name.toLowerCase() === name.trim().toLowerCase()
       );
 
+      let hasExistingPreferences = false;
+
       // If student doesn't exist, create them
       if (!studentRecord) {
         // Normalize name to Title Case for consistent storage
@@ -83,6 +85,16 @@ const StudentLogin = () => {
 
         if (studentError) throw studentError;
         studentRecord = newStudent;
+      } else {
+        // Check if student has existing preferences
+        const { data: existingPrefs } = await supabase
+          .from("student_preferences")
+          .select("id")
+          .eq("student_id", studentRecord.id)
+          .eq("class_id", classData.id)
+          .limit(1);
+        
+        hasExistingPreferences = !!(existingPrefs && existingPrefs.length > 0);
       }
 
       // Store student data in session
@@ -93,7 +105,11 @@ const StudentLogin = () => {
         class_name: classData.name
       }));
 
-      toast.success(`Welcome ${studentRecord.name}!`);
+      if (hasExistingPreferences) {
+        toast.success(`Welcome back ${studentRecord.name}! Edit your preferences below.`);
+      } else {
+        toast.success(`Welcome ${studentRecord.name}!`);
+      }
       navigate("/student/preferences");
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
