@@ -15,39 +15,47 @@ interface Bubble {
   shineOffset: { x: number; y: number };
   reflectionScale: number;
   opacity: number;
+  // Reflection position variation
+  reflectionPosition: { top: number; left: number };
 }
+
+const MIN_BUBBLES = 7;
+const MAX_BUBBLES = 10;
+
+const createBubble = (id: number): Bubble => {
+  const cols = 5;
+  const rows = 2;
+  const col = id % cols;
+  const row = Math.floor(id / cols) % rows;
+  const cellWidth = 100 / cols;
+  const cellHeight = 100 / rows;
+  
+  return {
+    id,
+    size: Math.random() * 60 + 50,
+    left: col * cellWidth + Math.random() * cellWidth * 0.8,
+    bottom: row * cellHeight + Math.random() * cellHeight * 0.8,
+    delay: Math.random() * 8,
+    duration: Math.random() * 3 + 4,
+    colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
+    rotation: Math.random() * 360,
+    shineOffset: { x: Math.random() * 10 - 5, y: Math.random() * 10 - 5 },
+    reflectionScale: 0.7 + Math.random() * 0.6,
+    opacity: 0.85 + Math.random() * 0.15,
+    reflectionPosition: { 
+      top: 8 + Math.random() * 12, // 8% to 20%
+      left: 8 + Math.random() * 12  // 8% to 20%
+    },
+  };
+};
 
 const colorVariants = ['pink', 'blue', 'purple'] as const;
 
 
 const FloatingBubbles = () => {
   const [bubbles, setBubbles] = useState<Bubble[]>(() => {
-    const bubbleCount = 10;
-    const cols = 5;
-    const rows = Math.ceil(bubbleCount / cols);
-    
-    return Array.from({ length: bubbleCount }, (_, i) => {
-      // Grid-based distribution with randomness for natural feel
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const cellWidth = 100 / cols;
-      const cellHeight = 100 / rows;
-      
-      return {
-        id: i,
-        size: Math.random() * 60 + 50, // 50-110px
-        left: col * cellWidth + Math.random() * cellWidth * 0.8,
-        bottom: row * cellHeight + Math.random() * cellHeight * 0.8,
-        delay: Math.random() * 8,
-        duration: Math.random() * 3 + 4, // 4-7 seconds (faster)
-        colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
-        // Unique variations per bubble
-        rotation: Math.random() * 360,
-        shineOffset: { x: Math.random() * 10 - 5, y: Math.random() * 10 - 5 },
-        reflectionScale: 0.7 + Math.random() * 0.6, // 0.7 to 1.3
-        opacity: 0.85 + Math.random() * 0.15, // 0.85 to 1.0
-      };
-    });
+    const initialCount = Math.floor(Math.random() * (MAX_BUBBLES - MIN_BUBBLES + 1)) + MIN_BUBBLES;
+    return Array.from({ length: initialCount }, (_, i) => createBubble(i));
   });
 
   const [nextId, setNextId] = useState(10);
@@ -140,14 +148,23 @@ const FloatingBubbles = () => {
     // Play pop sound
     playPopSound();
     
-    // Mark bubble as popping (simple fade out)
+    // Mark bubble as popping
     setBubbles(prev => 
       prev.map(b => b.id === bubble.id ? { ...b, isPopping: true } : b)
     );
     
-    // Remove bubble after pop animation - don't respawn
+    // Remove bubble and spawn new one to maintain count
     setTimeout(() => {
-      setBubbles(prev => prev.filter(b => b.id !== bubble.id));
+      setBubbles(prev => {
+        const remaining = prev.filter(b => b.id !== bubble.id);
+        // Spawn new bubble if below minimum
+        if (remaining.length < MIN_BUBBLES) {
+          const newId = nextId;
+          setNextId(id => id + 1);
+          return [...remaining, createBubble(newId)];
+        }
+        return remaining;
+      });
     }, 200);
   }, [nextId, playPopSound]);
 
@@ -174,18 +191,10 @@ const FloatingBubbles = () => {
           <div 
             className="bubble-shine" 
             style={{ 
+              top: `${bubble.reflectionPosition.top}%`,
+              left: `${bubble.reflectionPosition.left}%`,
               transform: `translate(${bubble.shineOffset.x}%, ${bubble.shineOffset.y}%)`,
               scale: `${bubble.reflectionScale}`,
-            }} 
-          />
-          <div 
-            className="bubble-reflection" 
-            style={{ scale: `${bubble.reflectionScale * 0.9}` }} 
-          />
-          <div 
-            className="bubble-reflection-small" 
-            style={{ 
-              transform: `translate(${-bubble.shineOffset.x * 2}%, ${bubble.shineOffset.y}%)`,
             }} 
           />
         </div>
