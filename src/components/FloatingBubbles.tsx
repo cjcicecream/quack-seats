@@ -11,14 +11,6 @@ interface Bubble {
   isPopping?: boolean;
 }
 
-interface PopParticle {
-  id: number;
-  x: number;
-  y: number;
-  angle: number;
-  speed: number;
-  size: number;
-}
 
 const FloatingBubbles = () => {
   const [bubbles, setBubbles] = useState<Bubble[]>(() =>
@@ -32,9 +24,7 @@ const FloatingBubbles = () => {
     }))
   );
 
-  const [particles, setParticles] = useState<PopParticle[]>([]);
   const [nextId, setNextId] = useState(12);
-  const particleIdRef = useRef(0);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // Create a natural bubble pop sound using Web Audio API
@@ -127,28 +117,7 @@ const FloatingBubbles = () => {
     // Play pop sound
     playPopSound();
     
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    // Create pop particles
-    const newParticles: PopParticle[] = Array.from({ length: 8 }, (_, i) => ({
-      id: particleIdRef.current++,
-      x: centerX,
-      y: centerY,
-      angle: (i * 45) + Math.random() * 20 - 10,
-      speed: Math.random() * 100 + 50,
-      size: Math.random() * 8 + 4,
-    }));
-    
-    setParticles(prev => [...prev, ...newParticles]);
-    
-    // Remove particles after animation
-    setTimeout(() => {
-      setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
-    }, 500);
-    
-    // Mark bubble as popping
+    // Mark bubble as popping (simple fade out)
     setBubbles(prev => 
       prev.map(b => b.id === bubble.id ? { ...b, isPopping: true } : b)
     );
@@ -168,7 +137,7 @@ const FloatingBubbles = () => {
       };
       setNextId(prev => prev + 1);
       setBubbles(prev => [...prev, newBubble]);
-    }, 300);
+    }, 200);
   }, [nextId, playPopSound]);
 
   return (
@@ -193,21 +162,6 @@ const FloatingBubbles = () => {
         </div>
       ))}
       
-      {/* Pop particles */}
-      {particles.map((particle) => (
-        <div
-          key={particle.id}
-          className="pop-particle"
-          style={{
-            left: particle.x,
-            top: particle.y,
-            width: particle.size,
-            height: particle.size,
-            '--angle': `${particle.angle}deg`,
-            '--speed': `${particle.speed}px`,
-          } as React.CSSProperties}
-        />
-      ))}
     </div>
   );
 };
