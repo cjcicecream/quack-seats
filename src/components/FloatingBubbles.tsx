@@ -34,7 +34,7 @@ const FloatingBubbles = () => {
         left: col * cellWidth + Math.random() * cellWidth * 0.8,
         bottom: row * cellHeight + Math.random() * cellHeight * 0.8,
         delay: Math.random() * 8,
-        duration: Math.random() * 12 + 15,
+        duration: Math.random() * 4 + 5, // 5-9 seconds (faster)
         colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
       };
     });
