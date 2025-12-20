@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
+import { ArrowLeft } from "lucide-react";
 
 const TeacherAuth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -73,12 +74,22 @@ const TeacherAuth = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <button 
-          onClick={() => navigate("/")}
-          className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
-        >
-          🥔potato groups🥔
-        </button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <button 
+            onClick={() => navigate("/")}
+            className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+          >
+            🥔potato groups🥔
+          </button>
+        </div>
       </header>
       
       <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
