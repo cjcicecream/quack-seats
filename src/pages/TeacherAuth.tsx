@@ -144,16 +144,28 @@ const TeacherAuth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="pr-10"
+                  className="pr-12"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    setShowPassword((v) => !v);
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowPassword((v) => !v);
+                  }}
+                  className="absolute right-1 top-1/2 z-10 -translate-y-1/2 h-9 w-9 rounded-md hover:bg-muted/60"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
                 </Button>
               </div>
             </div>
