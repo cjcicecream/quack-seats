@@ -33,50 +33,14 @@ const SeatingChart = () => {
     loadPreferences();
   }, [classId]);
 
-  const loadArrangements = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("seating_arrangements")
-        .select("*")
-        .eq("class_id", classId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      
-      setArrangements(data || []);
-      if (data && data.length > 0) {
-        setCurrentArrangement(data[0].arrangement);
-      }
-    } catch (error: any) {
-      toast.error("Failed to load seating arrangements");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadPreferences = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("student_preferences")
-        .select("student_id, preferences, students(name)")
-        .eq("class_id", classId);
-
-      if (error) throw error;
-      setStudentPreferences(data || []);
-    } catch (error: any) {
-      console.error("Failed to load preferences:", error);
-    }
-  };
-
-  // Calculate preference satisfaction percentage
-  const preferenceStats = useMemo(() => {
-    if (!currentArrangement?.tables || studentPreferences.length === 0) {
+  // Helper function to calculate preference satisfaction for an arrangement
+  const calculateSatisfaction = (arrangement: any, prefs: StudentPreference[]) => {
+    if (!arrangement?.tables || prefs.length === 0) {
       return { percentage: 0, satisfied: 0, total: 0 };
     }
 
-    // Build a map of student name -> table index
     const studentTableMap: Record<string, number> = {};
-    currentArrangement.tables.forEach((table: any, tableIndex: number) => {
+    arrangement.tables.forEach((table: any, tableIndex: number) => {
       table.seats?.forEach((seat: any) => {
         if (seat.student?.name) {
           studentTableMap[seat.student.name.toLowerCase()] = tableIndex;
@@ -87,13 +51,12 @@ const SeatingChart = () => {
     let totalPreferences = 0;
     let satisfiedPreferences = 0;
 
-    studentPreferences.forEach((pref) => {
+    prefs.forEach((pref) => {
       const studentName = pref.students?.name?.toLowerCase();
       const studentTable = studentTableMap[studentName];
       
       if (studentTable === undefined) return;
 
-      // Get preference array (handle both formats)
       const prefArray = Array.isArray(pref.preferences) 
         ? pref.preferences 
         : pref.preferences?.students;
@@ -117,6 +80,59 @@ const SeatingChart = () => {
       : 0;
 
     return { percentage, satisfied: satisfiedPreferences, total: totalPreferences };
+  };
+
+  const loadArrangements = async () => {
+    try {
+      const [arrangementsResult, prefsResult] = await Promise.all([
+        supabase
+          .from("seating_arrangements")
+          .select("*")
+          .eq("class_id", classId)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("student_preferences")
+          .select("student_id, preferences, students(name)")
+          .eq("class_id", classId)
+      ]);
+
+      if (arrangementsResult.error) throw arrangementsResult.error;
+      
+      const data = arrangementsResult.data || [];
+      const prefs = (prefsResult.data || []) as StudentPreference[];
+      
+      setArrangements(data);
+      setStudentPreferences(prefs);
+      
+      if (data.length > 0) {
+        // Find the arrangement with highest preference satisfaction
+        let bestArrangement = data[0].arrangement;
+        let bestPercentage = -1;
+        
+        data.forEach((arr) => {
+          const stats = calculateSatisfaction(arr.arrangement, prefs);
+          if (stats.percentage > bestPercentage) {
+            bestPercentage = stats.percentage;
+            bestArrangement = arr.arrangement;
+          }
+        });
+        
+        setCurrentArrangement(bestArrangement);
+      }
+    } catch (error: any) {
+      toast.error("Failed to load seating arrangements");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadPreferences = async () => {
+    // Preferences are now loaded together with arrangements
+  };
+
+  // Use the helper function for current arrangement stats
+  const preferenceStats = useMemo(() => {
+    return calculateSatisfaction(currentArrangement, studentPreferences);
   }, [currentArrangement, studentPreferences]);
 
   // Smart seating algorithm that tries to maximize preference satisfaction
