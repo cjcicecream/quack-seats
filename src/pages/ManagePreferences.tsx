@@ -138,20 +138,28 @@ const ManagePreferences = () => {
                         
                         {/* Simple preview of preferences */}
                         <CardDescription className="text-sm">
-                          {Array.isArray(pref.preferences) && pref.preferences.length > 0 ? (
-                            <>
-                              Wants to sit with: {" "}
-                              <span className="font-medium">
-                                {pref.preferences
-                                  .slice(0, 2)
-                                  .map((p: any) => typeof p === 'string' ? p : p.name || 'Unknown')
-                                  .join(", ")}
-                                {pref.preferences.length > 2 && ` +${pref.preferences.length - 2} more`}
-                              </span>
-                            </>
-                          ) : (
-                            "No preferences submitted"
-                          )}
+                          {(() => {
+                            // Handle both array format and {students: [...]} format
+                            const prefArray = Array.isArray(pref.preferences) 
+                              ? pref.preferences 
+                              : pref.preferences?.students;
+                            
+                            if (Array.isArray(prefArray) && prefArray.length > 0) {
+                              return (
+                                <>
+                                  Wants to sit with: {" "}
+                                  <span className="font-medium">
+                                    {prefArray
+                                      .slice(0, 2)
+                                      .map((p: any) => typeof p === 'string' ? p : p.name || 'Unknown')
+                                      .join(", ")}
+                                    {prefArray.length > 2 && ` +${prefArray.length - 2} more`}
+                                  </span>
+                                </>
+                              );
+                            }
+                            return "No preferences submitted";
+                          })()}
                         </CardDescription>
                       </div>
                       
@@ -209,17 +217,24 @@ const ManagePreferences = () => {
                         <div>
                           <h4 className="font-semibold mb-2">All Preferences:</h4>
                           <ol className="list-decimal list-inside space-y-1">
-                            {Array.isArray(pref.preferences) ? (
-                              pref.preferences.map((p: any, i: number) => (
-                                <li key={i} className="text-muted-foreground">
-                                  {typeof p === 'string' ? p : p.name || 'Unknown'}
+                            {(() => {
+                              const prefArray = Array.isArray(pref.preferences) 
+                                ? pref.preferences 
+                                : pref.preferences?.students;
+                              
+                              if (Array.isArray(prefArray)) {
+                                return prefArray.map((p: any, i: number) => (
+                                  <li key={i} className="text-muted-foreground">
+                                    {typeof p === 'string' ? p : p.name || 'Unknown'}
+                                  </li>
+                                ));
+                              }
+                              return (
+                                <li className="text-muted-foreground">
+                                  {typeof pref.preferences === 'string' ? pref.preferences : JSON.stringify(pref.preferences)}
                                 </li>
-                              ))
-                            ) : (
-                              <li className="text-muted-foreground">
-                                {typeof pref.preferences === 'string' ? pref.preferences : JSON.stringify(pref.preferences)}
-                              </li>
-                            )}
+                              );
+                            })()}
                           </ol>
                         </div>
                         
