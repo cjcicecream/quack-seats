@@ -7,9 +7,12 @@ interface Bubble {
   bottom: number;
   delay: number;
   duration: number;
+  colorVariant: 'pink' | 'blue' | 'purple';
   isFragment?: boolean;
   isPopping?: boolean;
 }
+
+const colorVariants = ['pink', 'blue', 'purple'] as const;
 
 
 const FloatingBubbles = () => {
@@ -21,6 +24,7 @@ const FloatingBubbles = () => {
       bottom: -(Math.random() * 120 + 40),
       delay: Math.random() * 10,
       duration: Math.random() * 10 + 15,
+      colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
     }))
   );
 
@@ -121,6 +125,7 @@ const FloatingBubbles = () => {
         bottom: -(Math.random() * 120 + 40),
         delay: 0,
         duration: Math.random() * 10 + 15,
+        colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
       };
       setNextId(prev => prev + 1);
       setBubbles(prev => [...prev, newBubble]);
@@ -132,7 +137,7 @@ const FloatingBubbles = () => {
       {bubbles.map((bubble) => (
         <div
           key={bubble.id}
-          className={`soap-bubble pointer-events-auto cursor-pointer transition-transform ${
+          className={`soap-bubble soap-bubble-${bubble.colorVariant} pointer-events-auto cursor-pointer transition-transform ${
             bubble.isPopping ? 'animate-bubble-pop' : 'hover:scale-110'
           }`}
           style={{
