@@ -26,16 +26,17 @@ export function TeacherLayout({ children }: TeacherLayoutProps) {
     <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() =>
-              window.history.length > 1 ? navigate(-1) : navigate("/teacher/dashboard")
-            }
-            className="shrink-0"
+          <button
+            type="button"
+            onClick={() => {
+              toast.info("Going back");
+              navigate("/teacher/dashboard");
+            }}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+            aria-label="Back to dashboard"
           >
             <ArrowLeft className="h-5 w-5" />
-          </Button>
+          </button>
           <button 
             onClick={() => navigate("/")}
             className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
