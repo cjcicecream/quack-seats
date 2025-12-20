@@ -137,22 +137,9 @@ const FloatingBubbles = () => {
       prev.map(b => b.id === bubble.id ? { ...b, isPopping: true } : b)
     );
     
-    // Remove bubble after pop animation
+    // Remove bubble after pop animation - don't respawn
     setTimeout(() => {
       setBubbles(prev => prev.filter(b => b.id !== bubble.id));
-      
-      // Spawn a new bubble to replace the popped one
-      const newBubble: Bubble = {
-        id: nextId,
-        size: Math.random() * 80 + 40,
-        left: Math.random() * 100,
-        bottom: -10, // Start below screen
-        delay: 0,
-        duration: Math.random() * 10 + 12,
-        colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
-      };
-      setNextId(prev => prev + 1);
-      setBubbles(prev => [...prev, newBubble]);
     }, 200);
   }, [nextId, playPopSound]);
 
