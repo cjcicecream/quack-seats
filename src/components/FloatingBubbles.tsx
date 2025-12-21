@@ -10,6 +10,8 @@ interface Bubble {
   colorVariant: 'pink' | 'blue' | 'purple';
   isFragment?: boolean;
   isPopping?: boolean;
+  isEntering?: boolean;
+  enterFrom?: 'left' | 'right';
   // Variation properties
   rotation: number;
   shineOffset: { x: number; y: number };
@@ -23,7 +25,7 @@ interface Bubble {
 const MIN_BUBBLES = 7;
 const MAX_BUBBLES = 10;
 
-const createBubble = (id: number): Bubble => {
+const createBubble = (id: number, isNew: boolean = false): Bubble => {
   const cols = 5;
   const rows = 2;
   const col = id % cols;
@@ -31,12 +33,18 @@ const createBubble = (id: number): Bubble => {
   const cellWidth = 100 / cols;
   const cellHeight = 100 / rows;
   
+  // New bubbles enter from the side
+  const enterFrom = Math.random() > 0.5 ? 'left' : 'right';
+  const startLeft = isNew 
+    ? (enterFrom === 'left' ? -15 : 115) 
+    : col * cellWidth + Math.random() * cellWidth * 0.8;
+  
   return {
     id,
     size: Math.random() * 60 + 50,
-    left: col * cellWidth + Math.random() * cellWidth * 0.8,
+    left: startLeft,
     bottom: row * cellHeight + Math.random() * cellHeight * 0.8,
-    delay: Math.random() * 8,
+    delay: isNew ? 0 : Math.random() * 8,
     duration: Math.random() * 3 + 4,
     colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
     rotation: Math.random() * 360,
@@ -44,9 +52,11 @@ const createBubble = (id: number): Bubble => {
     reflectionScale: 0.7 + Math.random() * 0.6,
     opacity: 0.85 + Math.random() * 0.15,
     reflectionPosition: { 
-      top: 8 + Math.random() * 12, // 8% to 20%
-      left: 8 + Math.random() * 12  // 8% to 20%
+      top: 8 + Math.random() * 12,
+      left: 8 + Math.random() * 12
     },
+    isEntering: isNew,
+    enterFrom: isNew ? enterFrom : undefined,
   };
 };
 
@@ -158,7 +168,7 @@ const FloatingBubbles = () => {
       if (remaining.length < MIN_BUBBLES) {
         const newId = nextId;
         setNextId(id => id + 1);
-        return [...remaining, createBubble(newId)];
+        return [...remaining, createBubble(newId, true)];
       }
       return remaining;
     });
@@ -171,14 +181,14 @@ const FloatingBubbles = () => {
           key={bubble.id}
           className={`soap-bubble soap-bubble-${bubble.colorVariant} pointer-events-auto cursor-pointer transition-transform ${
             bubble.isPopping ? 'animate-bubble-pop' : 'hover:scale-110'
-          }`}
+          } ${bubble.isEntering ? (bubble.enterFrom === 'left' ? 'animate-bubble-enter-left' : 'animate-bubble-enter-right') : ''}`}
           style={{
             width: `${bubble.size}px`,
             height: `${bubble.size}px`,
             left: `${bubble.left}%`,
             bottom: `${bubble.bottom}%`,
             animationDelay: bubble.isPopping ? '0s' : `${bubble.delay}s`,
-            animationDuration: bubble.isPopping ? '0.3s' : `${bubble.duration}s`,
+            animationDuration: bubble.isPopping ? '0.3s' : (bubble.isEntering ? '3s' : `${bubble.duration}s`),
             transform: `rotate(${bubble.rotation}deg)`,
             opacity: bubble.opacity,
           }}
