@@ -71,57 +71,58 @@ const FloatingBubbles = () => {
       const ctx = audioContextRef.current;
       const now = ctx.currentTime;
       
-      // Main pop - quick descending "bloop" sound
+      // Soft, satisfying pop - gentle and pleasant
       const mainPop = ctx.createOscillator();
       const mainGain = ctx.createGain();
       mainPop.type = 'sine';
-      mainPop.frequency.setValueAtTime(800, now);
-      mainPop.frequency.exponentialRampToValueAtTime(150, now + 0.06);
-      mainGain.gain.setValueAtTime(0.3, now);
-      mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      mainPop.frequency.setValueAtTime(400, now);
+      mainPop.frequency.exponentialRampToValueAtTime(120, now + 0.1);
+      mainGain.gain.setValueAtTime(0.08, now);
+      mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
       mainPop.connect(mainGain);
       mainGain.connect(ctx.destination);
       
-      // Quick attack click for the initial "pop" snap
+      // Soft click - very subtle
       const click = ctx.createOscillator();
       const clickGain = ctx.createGain();
-      click.type = 'square';
-      click.frequency.setValueAtTime(1500, now);
-      click.frequency.exponentialRampToValueAtTime(400, now + 0.015);
-      clickGain.gain.setValueAtTime(0.12, now);
-      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+      click.type = 'sine';
+      click.frequency.setValueAtTime(600, now);
+      click.frequency.exponentialRampToValueAtTime(200, now + 0.03);
+      clickGain.gain.setValueAtTime(0.04, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
       click.connect(clickGain);
       clickGain.connect(ctx.destination);
       
-      // Subtle wet/watery undertone
+      // Gentle bubbly undertone
       const wet = ctx.createOscillator();
       const wetGain = ctx.createGain();
       wet.type = 'sine';
-      wet.frequency.setValueAtTime(350, now);
-      wet.frequency.exponentialRampToValueAtTime(80, now + 0.08);
-      wetGain.gain.setValueAtTime(0.08, now + 0.01);
-      wetGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      wet.frequency.setValueAtTime(250, now);
+      wet.frequency.exponentialRampToValueAtTime(60, now + 0.12);
+      wetGain.gain.setValueAtTime(0.03, now + 0.02);
+      wetGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
       wet.connect(wetGain);
       wetGain.connect(ctx.destination);
       
-      // Very short noise for air burst
-      const noiseLength = ctx.sampleRate * 0.02;
+      // Very quiet air puff
+      const noiseLength = ctx.sampleRate * 0.015;
       const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
       const noiseData = noiseBuffer.getChannelData(0);
       for (let i = 0; i < noiseLength; i++) {
-        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 3);
+        noiseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / noiseLength, 4);
       }
       
       const noiseSource = ctx.createBufferSource();
       noiseSource.buffer = noiseBuffer;
       
       const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = 'highpass';
-      noiseFilter.frequency.setValueAtTime(2000, now);
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.setValueAtTime(1200, now);
+      noiseFilter.Q.setValueAtTime(2, now);
       
       const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.1, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+      noiseGain.gain.setValueAtTime(0.025, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
       
       noiseSource.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
@@ -134,10 +135,10 @@ const FloatingBubbles = () => {
       noiseSource.start(now);
       
       // Stop all
-      mainPop.stop(now + 0.08);
-      click.stop(now + 0.02);
-      wet.stop(now + 0.1);
-      noiseSource.stop(now + 0.03);
+      mainPop.stop(now + 0.12);
+      click.stop(now + 0.04);
+      wet.stop(now + 0.15);
+      noiseSource.stop(now + 0.02);
     } catch (error) {
       console.log('Audio not supported');
     }
