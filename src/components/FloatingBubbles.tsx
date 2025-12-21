@@ -71,36 +71,36 @@ const FloatingBubbles = () => {
       const ctx = audioContextRef.current;
       const now = ctx.currentTime;
       
-      // Soft, satisfying pop - gentle and pleasant
+      // High-pitched soft pop
       const mainPop = ctx.createOscillator();
       const mainGain = ctx.createGain();
       mainPop.type = 'sine';
-      mainPop.frequency.setValueAtTime(400, now);
-      mainPop.frequency.exponentialRampToValueAtTime(120, now + 0.1);
-      mainGain.gain.setValueAtTime(0.08, now);
-      mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      mainPop.frequency.setValueAtTime(900, now);
+      mainPop.frequency.exponentialRampToValueAtTime(300, now + 0.08);
+      mainGain.gain.setValueAtTime(0.07, now);
+      mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
       mainPop.connect(mainGain);
       mainGain.connect(ctx.destination);
       
-      // Soft click - very subtle
+      // Higher click
       const click = ctx.createOscillator();
       const clickGain = ctx.createGain();
       click.type = 'sine';
-      click.frequency.setValueAtTime(600, now);
-      click.frequency.exponentialRampToValueAtTime(200, now + 0.03);
+      click.frequency.setValueAtTime(1400, now);
+      click.frequency.exponentialRampToValueAtTime(500, now + 0.025);
       clickGain.gain.setValueAtTime(0.04, now);
-      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
       click.connect(clickGain);
       clickGain.connect(ctx.destination);
       
-      // Gentle bubbly undertone
+      // Higher bubbly undertone
       const wet = ctx.createOscillator();
       const wetGain = ctx.createGain();
       wet.type = 'sine';
-      wet.frequency.setValueAtTime(250, now);
-      wet.frequency.exponentialRampToValueAtTime(60, now + 0.12);
-      wetGain.gain.setValueAtTime(0.03, now + 0.02);
-      wetGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      wet.frequency.setValueAtTime(600, now);
+      wet.frequency.exponentialRampToValueAtTime(180, now + 0.1);
+      wetGain.gain.setValueAtTime(0.025, now + 0.01);
+      wetGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
       wet.connect(wetGain);
       wetGain.connect(ctx.destination);
       
