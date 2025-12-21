@@ -104,6 +104,31 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  .animate-aurora-title {
+    background: linear-gradient(
+      90deg,
+      hsl(330, 80%, 60%) 0%,
+      hsl(280, 70%, 65%) 20%,
+      hsl(200, 95%, 60%) 40%,
+      hsl(170, 80%, 55%) 60%,
+      hsl(280, 70%, 65%) 80%,
+      hsl(330, 80%, 60%) 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: aurora-shift 8s ease-in-out infinite;
+  }
+
+  @keyframes aurora-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
   .soap-bubble {
     position: fixed;
     border-radius: 50%;
