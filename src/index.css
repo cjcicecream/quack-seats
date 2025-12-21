@@ -252,11 +252,11 @@ All colors MUST be HSL.
   }
 
   .animate-bubble-enter-left {
-    animation: bubble-enter-left 3s ease-out forwards !important;
+    animation: bubble-enter-left 6s ease-out forwards !important;
   }
 
   .animate-bubble-enter-right {
-    animation: bubble-enter-right 3s ease-out forwards !important;
+    animation: bubble-enter-right 6s ease-out forwards !important;
   }
 
   @keyframes bubble-enter-left {
