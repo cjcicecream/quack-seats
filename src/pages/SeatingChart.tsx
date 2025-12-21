@@ -322,24 +322,48 @@ const SeatingChart = () => {
 
       // If no previous arrangement or no students found, fetch from database
       if (studentsToUse.length === 0) {
-        const { data: students } = await supabase
-          .from("students")
-          .select("*")
-          .eq("class_id", classId);
+        // Fetch all students and their preference status
+        const [studentsResult, prefsStatusResult] = await Promise.all([
+          supabase
+            .from("students")
+            .select("*")
+            .eq("class_id", classId),
+          supabase
+            .from("student_preferences")
+            .select("student_id, status")
+            .eq("class_id", classId)
+        ]);
 
-        if (!students || students.length === 0) {
-          toast.error("Please add students first");
+        const allStudents = studentsResult.data || [];
+        const prefStatuses = prefsStatusResult.data || [];
+        
+        // Build a map of student_id -> status
+        const statusMap: Record<string, string> = {};
+        prefStatuses.forEach((p) => {
+          statusMap[p.student_id] = p.status;
+        });
+        
+        // Filter out students who are declined or pending
+        // Include: approved students OR students with no preference submitted
+        studentsToUse = allStudents.filter((student) => {
+          const status = statusMap[student.id];
+          // Include if no preference submitted, or if approved
+          return !status || status === 'approved';
+        });
+
+        if (studentsToUse.length === 0) {
+          toast.error("No approved students to arrange. Please approve some student preferences first.");
           setLoading(false);
           return;
         }
-        studentsToUse = students;
       }
 
-      // Fetch fresh preferences
+      // Fetch fresh preferences (only approved ones)
       const { data: prefs } = await supabase
         .from("student_preferences")
-        .select("student_id, preferences, students(name)")
-        .eq("class_id", classId);
+        .select("student_id, preferences, status, students(name)")
+        .eq("class_id", classId)
+        .eq("status", "approved");
 
       const layoutData = layout.layout as any;
       const tables = layoutData.tables || [];
