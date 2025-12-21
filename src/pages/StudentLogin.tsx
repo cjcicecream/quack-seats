@@ -35,81 +35,41 @@ const StudentLogin = () => {
         return;
       }
 
-      // Check if class exists (convert to uppercase to match teacher's code format)
-      const { data: classData, error: classError } = await supabase
-        .from("classes")
-        .select("id, name")
-        .eq("class_code", classCode.trim().toUpperCase())
-        .maybeSingle();
+      // Use server-side edge function for secure student login
+      const { data, error } = await supabase.functions.invoke('student-auth', {
+        body: {
+          action: 'login',
+          name: name.trim(),
+          classCode: classCode.trim()
+        }
+      });
 
-      if (classError) {
-        toast.error("Error checking class code. Please try again.");
+      if (error) {
+        toast.error("Error connecting to server. Please try again.");
         setLoading(false);
         return;
       }
 
-      if (!classData) {
-        toast.error("Invalid class code. Please check with your teacher.");
+      if (data.error) {
+        toast.error(data.error);
         setLoading(false);
         return;
       }
 
-      // Check if student already exists in this class (case-insensitive name match)
-      const { data: existingStudents } = await supabase
-        .from("students")
-        .select("*")
-        .eq("class_id", classData.id);
+      const { student, hasExistingPreferences } = data;
 
-      let studentRecord = existingStudents?.find(
-        s => s.name.toLowerCase() === name.trim().toLowerCase()
-      );
-
-      let hasExistingPreferences = false;
-
-      // If student doesn't exist, create them
-      if (!studentRecord) {
-        // Normalize name to Title Case for consistent storage
-        const normalizedName = name.trim()
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join(' ');
-          
-        const { data: newStudent, error: studentError } = await supabase
-          .from("students")
-          .insert({
-            class_id: classData.id,
-            name: normalizedName,
-            auth_user_id: null
-          })
-          .select()
-          .single();
-
-        if (studentError) throw studentError;
-        studentRecord = newStudent;
-      } else {
-        // Check if student has existing preferences
-        const { data: existingPrefs } = await supabase
-          .from("student_preferences")
-          .select("id")
-          .eq("student_id", studentRecord.id)
-          .eq("class_id", classData.id)
-          .limit(1);
-        
-        hasExistingPreferences = !!(existingPrefs && existingPrefs.length > 0);
-      }
-
-      // Store student data in session
+      // Store student data in session (server-verified)
       sessionStorage.setItem("student_data", JSON.stringify({
-        id: studentRecord.id,
-        name: studentRecord.name,
-        class_id: classData.id,
-        class_name: classData.name
+        id: student.id,
+        name: student.name,
+        class_id: student.class_id,
+        class_name: student.class_name
       }));
 
       if (hasExistingPreferences) {
-        toast.success(`Welcome back ${studentRecord.name}! Edit your preferences below.`);
+        toast.success(`Welcome back ${student.name}! Edit your preferences below.`);
       } else {
-        toast.success(`Welcome ${studentRecord.name}!`);
+        toast.success(`Welcome ${student.name}!`);
       }
       navigate("/student/preferences");
     } catch (error: any) {

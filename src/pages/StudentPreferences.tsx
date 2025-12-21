@@ -41,12 +41,24 @@ const StudentPreferences = () => {
 
   const loadPreviousPreferences = async (studentData: { id: string; class_id: string }) => {
     try {
-      // Get class settings and data
-      const { data: classData } = await supabase
-        .from("classes")
-        .select("max_preferences, name, allow_gender_preference, allow_seating_position, allow_avoid_students")
-        .eq("id", studentData.class_id)
-        .single();
+      // Use server-side edge function to get class settings and previous preferences
+      const { data, error } = await supabase.functions.invoke('student-auth', {
+        body: {
+          action: 'get_class_settings',
+          studentId: studentData.id,
+          classId: studentData.class_id
+        }
+      });
+
+      if (error || data?.error) {
+        console.error("Error loading class settings:", error || data?.error);
+        toast.error("Failed to load class settings. Please log in again.");
+        sessionStorage.removeItem("student_data");
+        navigate("/student/login");
+        return;
+      }
+
+      const { classSettings: classData, previousPreferences: prefData } = data;
 
       if (classData) {
         setMaxPreferences(classData.max_preferences);
@@ -63,16 +75,6 @@ const StudentPreferences = () => {
           setAvoidStudents(Array(Math.min(2, classData.max_preferences)).fill(""));
         }
       }
-
-      // Get previous preferences if any
-      const { data: prefData } = await supabase
-        .from("student_preferences")
-        .select("preferences, additional_comments")
-        .eq("student_id", studentData.id)
-        .eq("class_id", studentData.class_id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
 
       if (prefData) {
         const prefs = prefData.preferences as any;
@@ -173,17 +175,20 @@ const StudentPreferences = () => {
         formattedPreferences.avoid_students = avoidStudents.filter(s => s.trim() !== "");
       }
 
-      const { error } = await supabase
-        .from("student_preferences")
-        .insert({
-          student_id: student.id,
-          class_id: student.class_id,
+      // Use server-side edge function to submit preferences securely
+      const { data, error } = await supabase.functions.invoke('student-auth', {
+        body: {
+          action: 'submit_preferences',
+          studentId: student.id,
+          classId: student.class_id,
           preferences: formattedPreferences,
-          additional_comments: comments.trim() || null,
-          status: 'pending'
-        });
+          additionalComments: comments.trim() || null
+        }
+      });
 
-      if (error) throw error;
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || 'Failed to submit preferences');
+      }
 
       toast.success("Preferences submitted successfully! You can update them anytime before the teacher creates the final chart.");
       navigate("/student/success");
