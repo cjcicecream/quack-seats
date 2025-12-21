@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import DuckAvatar from "@/components/DuckAvatar";
-import { RefreshCw, Heart } from "lucide-react";
+import { RefreshCw, Heart, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface Arrangement {
@@ -134,6 +134,30 @@ const SeatingChart = () => {
   const preferenceStats = useMemo(() => {
     return calculateSatisfaction(currentArrangement, studentPreferences);
   }, [currentArrangement, studentPreferences]);
+
+  // Calculate satisfaction for all arrangements and find the best ones
+  const arrangementStats = useMemo(() => {
+    const stats = arrangements.map((arr) => ({
+      id: arr.id,
+      ...calculateSatisfaction(arr.arrangement, studentPreferences)
+    }));
+    
+    // Find the highest percentage
+    const maxPercentage = Math.max(...stats.map(s => s.percentage), 0);
+    
+    return { stats, maxPercentage };
+  }, [arrangements, studentPreferences]);
+
+  const getArrangementStars = (arrId: string) => {
+    const stat = arrangementStats.stats.find(s => s.id === arrId);
+    if (!stat || stat.total === 0 || arrangementStats.maxPercentage === 0) return 0;
+    
+    // Only show stars for arrangements at the max percentage
+    if (stat.percentage === arrangementStats.maxPercentage) {
+      return 1; // Single star for best arrangement(s)
+    }
+    return 0;
+  };
 
   // Smart seating algorithm that prioritizes student preferences
   const optimizeSeating = (students: any[], tables: any[], preferences: StudentPreference[]) => {
@@ -450,8 +474,11 @@ const SeatingChart = () => {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-lg">
+                      <h3 className="font-semibold text-lg flex items-center gap-1">
                         {index === 0 ? '🌟 Latest' : `#${arrangements.length - index}`}
+                        {getArrangementStars(arr.id) > 0 && (
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 ml-1" />
+                        )}
                       </h3>
                       <p className="text-sm text-muted-foreground mt-1">
                         {new Date(arr.created_at).toLocaleDateString('en-US', {
@@ -462,6 +489,11 @@ const SeatingChart = () => {
                           minute: '2-digit'
                         })}
                       </p>
+                      {arrangementStats.stats.find(s => s.id === arr.id)?.total > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {arrangementStats.stats.find(s => s.id === arr.id)?.percentage}% preferences met
+                        </p>
+                      )}
                     </div>
                     {currentArrangement === arr.arrangement && (
                       <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
