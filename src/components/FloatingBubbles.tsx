@@ -19,15 +19,6 @@ interface Bubble {
   reflectionPosition: { top: number; left: number };
 }
 
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  angle: number;
-  speed: number;
-  colorVariant: 'pink' | 'blue' | 'purple';
-}
 
 const MIN_BUBBLES = 7;
 const MAX_BUBBLES = 10;
@@ -68,9 +59,7 @@ const FloatingBubbles = () => {
     return Array.from({ length: initialCount }, (_, i) => createBubble(i));
   });
 
-  const [particles, setParticles] = useState<Particle[]>([]);
   const [nextId, setNextId] = useState(10);
-  const [nextParticleId, setNextParticleId] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // Classic bubble pop sound - quick, snappy "pop" like the sound effect video
@@ -154,30 +143,6 @@ const FloatingBubbles = () => {
     }
   }, []);
 
-  const spawnParticles = useCallback((bubble: Bubble, clientX: number, clientY: number) => {
-    const particleCount = 6 + Math.floor(Math.random() * 4); // 6-9 particles
-    const newParticles: Particle[] = [];
-    
-    for (let i = 0; i < particleCount; i++) {
-      newParticles.push({
-        id: nextParticleId + i,
-        x: clientX,
-        y: clientY,
-        size: 4 + Math.random() * 6, // 4-10px
-        angle: (Math.PI * 2 * i) / particleCount + Math.random() * 0.5,
-        speed: 40 + Math.random() * 60, // 40-100px
-        colorVariant: bubble.colorVariant,
-      });
-    }
-    
-    setNextParticleId(prev => prev + particleCount);
-    setParticles(prev => [...prev, ...newParticles]);
-    
-    // Remove particles after animation
-    setTimeout(() => {
-      setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
-    }, 500);
-  }, [nextParticleId]);
 
   const handleBubblePop = useCallback((bubble: Bubble, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -185,28 +150,18 @@ const FloatingBubbles = () => {
     // Play pop sound
     playPopSound();
     
-    // Spawn particles at click position
-    spawnParticles(bubble, e.clientX, e.clientY);
-    
-    // Mark bubble as popping
-    setBubbles(prev => 
-      prev.map(b => b.id === bubble.id ? { ...b, isPopping: true } : b)
-    );
-    
-    // Remove bubble and spawn new one to maintain count
-    setTimeout(() => {
-      setBubbles(prev => {
-        const remaining = prev.filter(b => b.id !== bubble.id);
-        // Spawn new bubble if below minimum
-        if (remaining.length < MIN_BUBBLES) {
-          const newId = nextId;
-          setNextId(id => id + 1);
-          return [...remaining, createBubble(newId)];
-        }
-        return remaining;
-      });
-    }, 200);
-  }, [nextId, playPopSound, spawnParticles]);
+    // Remove bubble immediately and spawn new one to maintain count
+    setBubbles(prev => {
+      const remaining = prev.filter(b => b.id !== bubble.id);
+      // Spawn new bubble if below minimum
+      if (remaining.length < MIN_BUBBLES) {
+        const newId = nextId;
+        setNextId(id => id + 1);
+        return [...remaining, createBubble(newId)];
+      }
+      return remaining;
+    });
+  }, [nextId, playPopSound]);
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -238,22 +193,6 @@ const FloatingBubbles = () => {
             }} 
           />
         </div>
-      ))}
-      
-      {/* Particles */}
-      {particles.map((particle) => (
-        <div
-          key={particle.id}
-          className={`pop-particle pop-particle-${particle.colorVariant}`}
-          style={{
-            left: particle.x,
-            top: particle.y,
-            width: particle.size,
-            height: particle.size,
-            '--angle': `${particle.angle}rad`,
-            '--speed': `${particle.speed}px`,
-          } as React.CSSProperties}
-        />
       ))}
     </div>
   );
