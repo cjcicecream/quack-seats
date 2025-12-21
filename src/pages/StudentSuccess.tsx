@@ -37,22 +37,14 @@ const StudentSuccess = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            Your teacher will review your preferences and create the seating chart soon.
-            You can update your preferences anytime by logging in again.
+            Your teacher will review your preferences and create the seating chart.
+            Log back in with the same name and class code to change your preferences.
           </p>
           
           <div className="space-y-2">
             <Button
               variant="playful"
               size="lg"
-              className="w-full"
-              onClick={() => navigate("/student/final-view")}
-            >
-              View Final Seating Chart
-            </Button>
-            
-            <Button
-              variant="outline"
               className="w-full"
               onClick={() => navigate("/student/preferences")}
             >
