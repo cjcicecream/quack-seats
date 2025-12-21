@@ -12,7 +12,7 @@ const Home = () => {
       
       <div className="relative z-10 text-center max-w-4xl mx-auto space-y-8 px-4">
         <div className="space-y-6">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-fade-in leading-relaxed py-4 overflow-visible">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-clip-text text-transparent animate-fade-in leading-relaxed py-4 overflow-visible animate-aurora-title">
             🥔potato groups🥔
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground animate-fade-in">
