@@ -46,7 +46,7 @@ const TeacherPreferences = () => {
     try {
       const { data: classData, error: classError } = await supabase
         .from("classes")
-        .select("name")
+        .select("name, allow_gender_preference")
         .eq("id", classId)
         .single();
 
@@ -67,6 +67,12 @@ const TeacherPreferences = () => {
       if (saved) {
         setPreferences(prev => ({ ...prev, ...JSON.parse(saved) }));
       }
+      
+      // Sync mix_genders_at_tables from database value
+      setPreferences(prev => ({ 
+        ...prev, 
+        mix_genders_at_tables: classData.allow_gender_preference || false 
+      }));
     } catch (error: any) {
       toast.error("Failed to load preferences");
       navigate("/teacher/dashboard");
@@ -75,10 +81,20 @@ const TeacherPreferences = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
     try {
+      // Save to localStorage
       localStorage.setItem(`teacher_prefs_${classId}`, JSON.stringify(preferences));
+      
+      // Sync mix_genders_at_tables to database so student questionnaire shows/hides gender question
+      const { error } = await supabase
+        .from("classes")
+        .update({ allow_gender_preference: preferences.mix_genders_at_tables })
+        .eq("id", classId);
+      
+      if (error) throw error;
+      
       toast.success("Teacher preferences saved!");
     } catch (error: any) {
       toast.error("Failed to save preferences");
