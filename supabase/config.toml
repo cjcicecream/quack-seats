@@ -2,3 +2,6 @@ project_id = "raufmhanlalgrzrbezas"
 
 [functions.analyze-comment]
 verify_jwt = false
+
+[functions.student-auth]
+verify_jwt = false
