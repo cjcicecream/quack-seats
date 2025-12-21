@@ -220,7 +220,7 @@ const StudentPreferences = () => {
     <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <Link 
-          to="/student/login"
+          to="/"
           className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
         >
           <ArrowLeft className="h-5 w-5 text-primary" />
