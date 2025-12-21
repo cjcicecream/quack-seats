@@ -126,7 +126,7 @@ const StudentLogin = () => {
           to="/"
           className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
         >
-          <ArrowLeft className="h-5 w-5 text-primary" />
+          <ArrowLeft className="h-5 w-5 text-foreground" />
           🥔potato groups🥔
         </Link>
       </header>
