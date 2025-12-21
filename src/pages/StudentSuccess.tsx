@@ -2,16 +2,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import FloatingBubbles from "@/components/FloatingBubbles";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ArrowLeft } from "lucide-react";
 const StudentSuccess = () => {
   const navigate = useNavigate();
   const studentData = sessionStorage.getItem("student_data");
   const studentName = studentData ? JSON.parse(studentData).name : "Student";
   return <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <button onClick={() => navigate("/")} className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-          🥔potato groups🥔
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate("/student/home")} className="p-2 hover:bg-muted rounded-lg transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <button onClick={() => navigate("/")} className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+            🥔potato groups🥔
+          </button>
+        </div>
       </header>
       
       <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
