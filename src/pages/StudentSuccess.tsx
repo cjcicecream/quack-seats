@@ -43,9 +43,7 @@ const StudentSuccess = () => {
           <div className="space-y-2">
             
             
-            <Button variant="ghost" className="w-full" onClick={() => navigate("/")}>
-              Back to Home
-            </Button>
+            
           </div>
         </CardContent>
       </Card>
