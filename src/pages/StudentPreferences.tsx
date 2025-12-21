@@ -303,24 +303,6 @@ const StudentPreferences = () => {
                 </div>
               )}
 
-              {classSettings.allow_seating_position && (
-                <div className="space-y-2 pt-4 border-t">
-                  <Label htmlFor="position">Seating Position Preference (Optional)</Label>
-                  <Select value={seatingPosition || "none"} onValueChange={(value) => setSeatingPosition(value === "none" ? "" : value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="No preference" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No preference</SelectItem>
-                      <SelectItem value="front">Front of classroom</SelectItem>
-                      <SelectItem value="middle">Middle of classroom</SelectItem>
-                      <SelectItem value="back">Back of classroom</SelectItem>
-                      <SelectItem value="window">Near window</SelectItem>
-                      <SelectItem value="door">Near door</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
 
               {classSettings.allow_avoid_students && (
                 <div className="space-y-4 pt-4 border-t">
