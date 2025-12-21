@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, X, Users } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 interface Student {
   id: string;
   name: string;
@@ -135,17 +136,34 @@ const TeacherPreferences = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-start justify-between gap-4 py-3 border-b">
-              <div className="space-y-0.5 flex-1 min-w-0">
-                <Label htmlFor="prioritize">Prioritize Student Requests</Label>
+            <div className="py-3 border-b">
+              <div className="space-y-3">
+                <Label>Priority Order</Label>
                 <p className="text-sm text-muted-foreground">
-                  Try to honor student seating preferences when possible
+                  Choose whose seating preferences should be prioritized first
                 </p>
+                <RadioGroup
+                  value={preferences.prioritize_student_requests ? "students" : "teacher"}
+                  onValueChange={(value) => setPreferences({
+                    ...preferences,
+                    prioritize_student_requests: value === "students"
+                  })}
+                  className="flex flex-col gap-2 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="students" id="prioritize-students" />
+                    <Label htmlFor="prioritize-students" className="font-normal cursor-pointer">
+                      Student requests first
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="teacher" id="prioritize-teacher" />
+                    <Label htmlFor="prioritize-teacher" className="font-normal cursor-pointer">
+                      Teacher preferences first
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
-              <Switch id="prioritize" checked={preferences.prioritize_student_requests} onCheckedChange={checked => setPreferences({
-              ...preferences,
-              prioritize_student_requests: checked
-            })} className="shrink-0" />
             </div>
 
             <div className="flex items-start justify-between gap-4 py-3 border-b">
