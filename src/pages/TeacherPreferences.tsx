@@ -30,6 +30,7 @@ const TeacherPreferences = () => {
   const [preferences, setPreferences] = useState({
     prioritize_student_requests: true,
     avoid_large_groups: false,
+    max_friends_per_table: 2,
     mix_genders_at_tables: false,
     separate_disruptive: true,
     notes: "",
@@ -153,6 +154,24 @@ const TeacherPreferences = () => {
                 <p className="text-sm text-muted-foreground">
                   Prevent too many friends from sitting together at one table
                 </p>
+                {preferences.avoid_large_groups && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Label htmlFor="maxFriends" className="text-sm whitespace-nowrap">Max friends per table:</Label>
+                    <Select
+                      value={String(preferences.max_friends_per_table)}
+                      onValueChange={(v) => setPreferences({ ...preferences, max_friends_per_table: Number(v) })}
+                    >
+                      <SelectTrigger className="w-20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <Switch id="avoidGroups" checked={preferences.avoid_large_groups} onCheckedChange={checked => setPreferences({
               ...preferences,
