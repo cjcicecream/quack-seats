@@ -57,7 +57,33 @@ const ManagePreferences = () => {
       ]);
 
       if (prefsResult.error) throw prefsResult.error;
-      setPreferences(prefsResult.data || []);
+      
+      // Remove duplicates - keep only the most recent entry per student
+      const allPrefs = prefsResult.data || [];
+      const seenStudents = new Set<string>();
+      const uniquePrefs: Preference[] = [];
+      const duplicateIds: string[] = [];
+      
+      // Since we ordered by created_at desc, first occurrence is the most recent
+      allPrefs.forEach((pref) => {
+        if (!seenStudents.has(pref.student_id)) {
+          seenStudents.add(pref.student_id);
+          uniquePrefs.push(pref);
+        } else {
+          duplicateIds.push(pref.id);
+        }
+      });
+      
+      // Delete duplicates from database
+      if (duplicateIds.length > 0) {
+        await supabase
+          .from("student_preferences")
+          .delete()
+          .in("id", duplicateIds);
+        toast.info(`Removed ${duplicateIds.length} duplicate preference(s)`);
+      }
+      
+      setPreferences(uniquePrefs);
       
       if (arrangementResult.data) {
         setLatestArrangement(arrangementResult.data);
