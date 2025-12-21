@@ -175,7 +175,7 @@ const FloatingBubbles = () => {
   }, [nextId, playPopSound]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-50">
       {bubbles.map((bubble) => (
         <div
           key={bubble.id}
