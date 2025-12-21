@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
+import { ArrowLeft } from "lucide-react";
 
 const StudentLogin = () => {
   const [name, setName] = useState("");
@@ -121,12 +122,13 @@ const StudentLogin = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <button 
-          onClick={() => navigate("/")}
-          className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+        <Link 
+          to="/"
+          className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
         >
+          <ArrowLeft className="h-5 w-5 text-primary" />
           🥔potato groups🥔
-        </button>
+        </Link>
       </header>
       
       <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
@@ -182,14 +184,6 @@ const StudentLogin = () => {
             </Button>
           </form>
           
-          <div className="mt-6 text-center">
-            <a
-              href="/"
-              className="block text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              ← Back to home
-            </a>
-          </div>
         </CardContent>
       </Card>
       </div>
