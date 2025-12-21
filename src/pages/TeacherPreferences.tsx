@@ -181,16 +181,6 @@ const TeacherPreferences = () => {
               />
             </div>
 
-            <div className="space-y-2 pt-4">
-              <Label htmlFor="notes">Additional Notes</Label>
-              <Textarea
-                id="notes"
-                placeholder="Any special considerations, specific pairings to avoid, or other notes..."
-                value={preferences.notes}
-                onChange={(e) => setPreferences({ ...preferences, notes: e.target.value })}
-                rows={4}
-              />
-            </div>
           </CardContent>
         </Card>
 
