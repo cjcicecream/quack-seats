@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, ChevronDown, ChevronUp, Search, Check, X } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface Preference {
@@ -20,6 +20,12 @@ interface Preference {
   };
 }
 
+interface SeatingArrangement {
+  id: string;
+  arrangement: any;
+  created_at: string;
+}
+
 const ManagePreferences = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
@@ -27,26 +33,70 @@ const ManagePreferences = () => {
   const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
+  const [latestArrangement, setLatestArrangement] = useState<SeatingArrangement | null>(null);
 
   useEffect(() => {
-    loadPreferences();
+    loadData();
   }, [classId]);
 
-  const loadPreferences = async () => {
+  const loadData = async () => {
     try {
-      const { data, error } = await supabase
-        .from("student_preferences")
-        .select("*, students(name)")
-        .eq("class_id", classId)
-        .order("created_at", { ascending: false });
+      const [prefsResult, arrangementResult] = await Promise.all([
+        supabase
+          .from("student_preferences")
+          .select("*, students(name)")
+          .eq("class_id", classId)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("seating_arrangements")
+          .select("*")
+          .eq("class_id", classId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      ]);
 
-      if (error) throw error;
-      setPreferences(data || []);
+      if (prefsResult.error) throw prefsResult.error;
+      setPreferences(prefsResult.data || []);
+      
+      if (arrangementResult.data) {
+        setLatestArrangement(arrangementResult.data);
+      }
     } catch (error: any) {
       toast.error("Failed to load preferences");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Build a map of student name -> table index from the arrangement
+  const studentTableMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (!latestArrangement?.arrangement?.tables) return map;
+    
+    latestArrangement.arrangement.tables.forEach((table: any, tableIndex: number) => {
+      table.seats?.forEach((seat: any) => {
+        if (seat.student?.name) {
+          map[seat.student.name.toLowerCase()] = tableIndex;
+        }
+      });
+    });
+    return map;
+  }, [latestArrangement]);
+
+  // Check if a specific preference is fulfilled (same table)
+  const isPreferenceFulfilled = (studentName: string, preferredName: string): boolean => {
+    if (Object.keys(studentTableMap).length === 0) return false;
+    
+    const studentTable = studentTableMap[studentName.toLowerCase()];
+    const preferredTable = studentTableMap[preferredName.toLowerCase()];
+    
+    if (studentTable === undefined || preferredTable === undefined) return false;
+    return studentTable === preferredTable;
+  };
+
+  const loadPreferences = async () => {
+    loadData();
   };
 
   const updateStatus = async (id: string, status: string) => {
@@ -265,7 +315,14 @@ const ManagePreferences = () => {
                       
                       <CollapsibleContent className="space-y-4 mt-4">
                         <div>
-                          <h4 className="font-semibold mb-2">All Preferences:</h4>
+                          <h4 className="font-semibold mb-2">
+                            All Preferences:
+                            {Object.keys(studentTableMap).length > 0 && (
+                              <span className="text-xs font-normal text-muted-foreground ml-2">
+                                (based on latest seating chart)
+                              </span>
+                            )}
+                          </h4>
                           <ol className="list-decimal list-inside space-y-1">
                             {(() => {
                               const prefArray = Array.isArray(pref.preferences) 
@@ -273,11 +330,24 @@ const ManagePreferences = () => {
                                 : pref.preferences?.students;
                               
                               if (Array.isArray(prefArray)) {
-                                return prefArray.map((p: any, i: number) => (
-                                  <li key={i} className="text-muted-foreground">
-                                    {typeof p === 'string' ? p : p.name || 'Unknown'}
-                                  </li>
-                                ));
+                                return prefArray.map((p: any, i: number) => {
+                                  const prefName = typeof p === 'string' ? p : p.name || 'Unknown';
+                                  const fulfilled = isPreferenceFulfilled(pref.students.name, prefName);
+                                  const hasArrangement = Object.keys(studentTableMap).length > 0;
+                                  
+                                  return (
+                                    <li key={i} className="text-muted-foreground flex items-center gap-2">
+                                      <span>{prefName}</span>
+                                      {hasArrangement && (
+                                        fulfilled ? (
+                                          <Check className="h-4 w-4 text-green-500" />
+                                        ) : (
+                                          <X className="h-4 w-4 text-red-400" />
+                                        )
+                                      )}
+                                    </li>
+                                  );
+                                });
                               }
                               return (
                                 <li className="text-muted-foreground">
