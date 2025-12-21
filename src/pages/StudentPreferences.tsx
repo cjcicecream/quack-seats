@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -219,34 +219,26 @@ const StudentPreferences = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <button 
-          onClick={() => navigate("/")}
-          className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+        <Link 
+          to="/student/login"
+          className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
         >
+          <ArrowLeft className="h-5 w-5 text-primary" />
           🥔potato groups🥔
-        </button>
+        </Link>
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
       </header>
       
       <div className="flex-1 p-4 md:p-8 relative overflow-hidden">
         <FloatingBubbles />
         
         <div className="max-w-2xl mx-auto relative z-10">
-          <div className="flex justify-between items-center mb-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/student/login")}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
 
         <Card className="shadow-[var(--shadow-glow)]">
           <CardHeader>
