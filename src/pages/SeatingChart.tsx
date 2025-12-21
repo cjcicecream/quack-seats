@@ -344,13 +344,31 @@ const SeatingChart = () => {
       const layoutData = layout.layout as any;
       const tables = layoutData.tables || [];
       
-      // Use smart algorithm if we have preferences, otherwise random
       let arrangement;
       if (prefs && prefs.length > 0) {
-        // Shuffle students first to add randomness, then optimize
-        const shuffled = [...studentsToUse].sort(() => Math.random() - 0.5);
-        arrangement = optimizeSeating(shuffled, tables, prefs as StudentPreference[]);
-        toast.success("Smart seating arrangement generated!");
+        // Generate multiple candidate arrangements and rank them
+        const numCandidates = 20; // Generate 20 candidates
+        const candidates: { arrangement: any; score: number }[] = [];
+        
+        for (let i = 0; i < numCandidates; i++) {
+          // Shuffle with different randomness each time
+          const shuffled = [...studentsToUse].sort(() => Math.random() - 0.5);
+          const candidate = optimizeSeating(shuffled, tables, prefs as StudentPreference[]);
+          const stats = calculateSatisfaction(candidate, prefs as StudentPreference[]);
+          candidates.push({ arrangement: candidate, score: stats.percentage });
+        }
+        
+        // Sort by score descending (best first)
+        candidates.sort((a, b) => b.score - a.score);
+        
+        // Pick the arrangement based on how many already exist
+        // First generation = best (index 0), second = second best (index 1), etc.
+        const targetIndex = Math.min(arrangements.length, candidates.length - 1);
+        arrangement = candidates[targetIndex].arrangement;
+        
+        const rank = targetIndex + 1;
+        const ordinal = rank === 1 ? "best" : rank === 2 ? "2nd best" : rank === 3 ? "3rd best" : `${rank}th best`;
+        toast.success(`Generated ${ordinal} arrangement (${candidates[targetIndex].score}% preferences met)`);
       } else {
         // Fallback to random
         const shuffled = [...studentsToUse].sort(() => Math.random() - 0.5);
