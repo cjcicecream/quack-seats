@@ -3,19 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useNavigate } from "react-router-dom";
 import FloatingBubbles from "@/components/FloatingBubbles";
 import { CheckCircle } from "lucide-react";
-
 const StudentSuccess = () => {
   const navigate = useNavigate();
   const studentData = sessionStorage.getItem("student_data");
   const studentName = studentData ? JSON.parse(studentData).name : "Student";
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <button 
-          onClick={() => navigate("/")}
-          className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
-        >
+        <button onClick={() => navigate("/")} className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
           🥔potato groups🥔
         </button>
       </header>
@@ -42,28 +36,15 @@ const StudentSuccess = () => {
           </p>
           
           <div className="space-y-2">
-            <Button
-              variant="playful"
-              size="lg"
-              className="w-full"
-              onClick={() => navigate("/student/preferences")}
-            >
-              Update Preferences
-            </Button>
             
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={() => navigate("/")}
-            >
+            
+            <Button variant="ghost" className="w-full" onClick={() => navigate("/")}>
               Back to Home
             </Button>
           </div>
         </CardContent>
       </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default StudentSuccess;
