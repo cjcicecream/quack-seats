@@ -188,7 +188,7 @@ const FloatingBubbles = () => {
             left: `${bubble.left}%`,
             bottom: `${bubble.bottom}%`,
             animationDelay: bubble.isPopping ? '0s' : `${bubble.delay}s`,
-            animationDuration: bubble.isPopping ? '0.3s' : (bubble.isEntering ? '3s' : `${bubble.duration}s`),
+            animationDuration: bubble.isPopping ? '0.3s' : (bubble.isEntering ? '6s' : `${bubble.duration}s`),
             transform: `rotate(${bubble.rotation}deg)`,
             opacity: bubble.opacity,
           }}
