@@ -1,11 +1,11 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import DuckAvatar from "@/components/DuckAvatar";
-import { RefreshCw, Heart, Star } from "lucide-react";
+import { RefreshCw, Heart, Star, Save, GripVertical } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface Arrangement {
@@ -27,6 +27,9 @@ const SeatingChart = () => {
   const [currentArrangement, setCurrentArrangement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [studentPreferences, setStudentPreferences] = useState<StudentPreference[]>([]);
+  const [draggedStudent, setDraggedStudent] = useState<{ tableIndex: number; seatIndex: number; student: any } | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [currentArrangementId, setCurrentArrangementId] = useState<string | null>(null);
 
   useEffect(() => {
     loadArrangements();
@@ -107,6 +110,7 @@ const SeatingChart = () => {
       if (data.length > 0) {
         // Find the arrangement with highest preference satisfaction
         let bestArrangement = data[0].arrangement;
+        let bestArrangementId = data[0].id;
         let bestPercentage = -1;
         
         data.forEach((arr) => {
@@ -114,10 +118,13 @@ const SeatingChart = () => {
           if (stats.percentage > bestPercentage) {
             bestPercentage = stats.percentage;
             bestArrangement = arr.arrangement;
+            bestArrangementId = arr.id;
           }
         });
         
         setCurrentArrangement(bestArrangement);
+        setCurrentArrangementId(bestArrangementId);
+        setHasUnsavedChanges(false);
       }
     } catch (error: any) {
       toast.error("Failed to load seating arrangements");
@@ -128,6 +135,62 @@ const SeatingChart = () => {
 
   const loadPreferences = async () => {
     // Preferences are now loaded together with arrangements
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (tableIndex: number, seatIndex: number, student: any) => {
+    setDraggedStudent({ tableIndex, seatIndex, student });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (targetTableIndex: number, targetSeatIndex: number) => {
+    if (!draggedStudent || !currentArrangement) return;
+
+    const { tableIndex: sourceTableIndex, seatIndex: sourceSeatIndex, student } = draggedStudent;
+
+    // Don't do anything if dropping on the same seat
+    if (sourceTableIndex === targetTableIndex && sourceSeatIndex === targetSeatIndex) {
+      setDraggedStudent(null);
+      return;
+    }
+
+    // Create a deep copy of the arrangement
+    const newArrangement = JSON.parse(JSON.stringify(currentArrangement));
+    
+    // Get the target student (if any)
+    const targetStudent = newArrangement.tables[targetTableIndex].seats[targetSeatIndex].student;
+    
+    // Swap the students
+    newArrangement.tables[targetTableIndex].seats[targetSeatIndex].student = student;
+    newArrangement.tables[sourceTableIndex].seats[sourceSeatIndex].student = targetStudent;
+
+    setCurrentArrangement(newArrangement);
+    setHasUnsavedChanges(true);
+    setDraggedStudent(null);
+  };
+
+  const saveArrangement = async () => {
+    if (!currentArrangementId || !currentArrangement) return;
+    
+    try {
+      const { error } = await supabase
+        .from("seating_arrangements")
+        .update({ arrangement: currentArrangement })
+        .eq("id", currentArrangementId);
+      
+      if (error) throw error;
+      
+      toast.success("Arrangement saved!");
+      setHasUnsavedChanges(false);
+      
+      // Reload to sync state
+      loadArrangements();
+    } catch (error: any) {
+      toast.error("Failed to save arrangement");
+    }
   };
 
   // Use the helper function for current arrangement stats
@@ -438,11 +501,26 @@ const SeatingChart = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             🥔View Charts🥔
           </h1>
-          <Button variant="playful" onClick={generateNewArrangement} disabled={loading}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Generate New
-          </Button>
+          <div className="flex gap-2">
+            {hasUnsavedChanges && (
+              <Button variant="default" onClick={saveArrangement}>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            )}
+            <Button variant="playful" onClick={generateNewArrangement} disabled={loading}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Generate New
+            </Button>
+          </div>
         </div>
+
+        {hasUnsavedChanges && (
+          <div className="mb-4 p-3 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-lg text-sm flex items-center gap-2">
+            <GripVertical className="h-4 w-4" />
+            Drag students between seats to rearrange. Don't forget to save your changes!
+          </div>
+        )}
 
         {currentArrangement ? (
           <Card className="p-8 shadow-[var(--shadow-glow)]">
@@ -455,40 +533,53 @@ const SeatingChart = () => {
                   <h3 className="text-lg font-semibold mb-4">Table {tableIndex + 1}</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {table.seats?.map((seat: any, seatIndex: number) => (
-                      <div key={seatIndex} className="flex justify-center">
+                      <div
+                        key={seatIndex}
+                        className={`flex justify-center p-2 rounded-lg transition-all ${
+                          draggedStudent ? 'border-2 border-dashed border-primary/50 bg-primary/5' : ''
+                        }`}
+                        onDragOver={handleDragOver}
+                        onDrop={() => handleDrop(tableIndex, seatIndex)}
+                      >
                         {seat.student ? (
-                          <DuckAvatar name={seat.student.name} size="md" />
+                          <div
+                            draggable
+                            onDragStart={() => handleDragStart(tableIndex, seatIndex, seat.student)}
+                            className="cursor-grab active:cursor-grabbing hover:scale-105 transition-transform"
+                          >
+                            <DuckAvatar name={seat.student.name} size="md" />
+                          </div>
                         ) : (
                           <div className="w-16 h-20 border-2 border-dashed border-muted-foreground/30 bg-muted/20 rounded-lg flex items-center justify-center text-3xl opacity-50">
                             🥔
                           </div>
                         )}
                       </div>
-                ))}
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Preference satisfaction stats */}
+            {preferenceStats.total > 0 && (
+              <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart className="h-5 w-5 text-pink-500" />
+                  <span className="font-semibold">Preferences Met</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Progress value={preferenceStats.percentage} className="flex-1 h-3" />
+                  <span className="text-lg font-bold min-w-[60px] text-right">
+                    {preferenceStats.percentage}%
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {preferenceStats.satisfied} of {preferenceStats.total} student preferences satisfied
+                </p>
               </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Preference satisfaction stats */}
-        {preferenceStats.total > 0 && (
-          <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Heart className="h-5 w-5 text-pink-500" />
-              <span className="font-semibold">Preferences Met</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Progress value={preferenceStats.percentage} className="flex-1 h-3" />
-              <span className="text-lg font-bold min-w-[60px] text-right">
-                {preferenceStats.percentage}%
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              {preferenceStats.satisfied} of {preferenceStats.total} student preferences satisfied
-            </p>
-          </div>
-        )}
-      </Card>
+            )}
+          </Card>
         ) : (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground text-lg mb-4">
@@ -508,11 +599,15 @@ const SeatingChart = () => {
                 <Card 
                   key={arr.id}
                   className={`p-4 cursor-pointer transition-all hover:scale-105 ${
-                    currentArrangement === arr.arrangement 
+                    currentArrangementId === arr.id 
                       ? 'border-2 border-primary shadow-[var(--shadow-glow)]' 
                       : 'border border-primary/30'
                   }`}
-                  onClick={() => setCurrentArrangement(arr.arrangement)}
+                  onClick={() => {
+                    setCurrentArrangement(arr.arrangement);
+                    setCurrentArrangementId(arr.id);
+                    setHasUnsavedChanges(false);
+                  }}
                 >
                   <div className="flex justify-between items-start">
                     <div>
@@ -537,7 +632,7 @@ const SeatingChart = () => {
                         </p>
                       )}
                     </div>
-                    {currentArrangement === arr.arrangement && (
+                    {currentArrangementId === arr.id && (
                       <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
                         Viewing
                       </span>
