@@ -5,32 +5,36 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import DuckAvatar from "@/components/DuckAvatar";
-import { RefreshCw, Heart, Star, Save, GripVertical } from "lucide-react";
+import { RefreshCw, Star, Save, GripVertical } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-
 interface Arrangement {
   id: string;
   arrangement: any;
   created_at: string;
 }
-
 interface StudentPreference {
   student_id: string;
   preferences: any;
-  students: { name: string };
+  students: {
+    name: string;
+  };
 }
-
 const SeatingChart = () => {
-  const { classId } = useParams();
+  const {
+    classId
+  } = useParams();
   const navigate = useNavigate();
   const [arrangements, setArrangements] = useState<Arrangement[]>([]);
   const [currentArrangement, setCurrentArrangement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [studentPreferences, setStudentPreferences] = useState<StudentPreference[]>([]);
-  const [draggedStudent, setDraggedStudent] = useState<{ tableIndex: number; seatIndex: number; student: any } | null>(null);
+  const [draggedStudent, setDraggedStudent] = useState<{
+    tableIndex: number;
+    seatIndex: number;
+    student: any;
+  } | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [currentArrangementId, setCurrentArrangementId] = useState<string | null>(null);
-
   useEffect(() => {
     loadArrangements();
     loadPreferences();
@@ -39,9 +43,12 @@ const SeatingChart = () => {
   // Helper function to calculate preference satisfaction for an arrangement
   const calculateSatisfaction = (arrangement: any, prefs: StudentPreference[]) => {
     if (!arrangement?.tables || prefs.length === 0) {
-      return { percentage: 0, satisfied: 0, total: 0 };
+      return {
+        percentage: 0,
+        satisfied: 0,
+        total: 0
+      };
     }
-
     const studentTableMap: Record<string, number> = {};
     arrangement.tables.forEach((table: any, tableIndex: number) => {
       table.seats?.forEach((seat: any) => {
@@ -50,26 +57,17 @@ const SeatingChart = () => {
         }
       });
     });
-
     let totalPreferences = 0;
     let satisfiedPreferences = 0;
-
-    prefs.forEach((pref) => {
+    prefs.forEach(pref => {
       const studentName = pref.students?.name?.toLowerCase();
       const studentTable = studentTableMap[studentName];
-      
       if (studentTable === undefined) return;
-
-      const prefArray = Array.isArray(pref.preferences) 
-        ? pref.preferences 
-        : pref.preferences?.students;
-
+      const prefArray = Array.isArray(pref.preferences) ? pref.preferences : pref.preferences?.students;
       if (!Array.isArray(prefArray)) return;
-
       prefArray.forEach((p: any) => {
         const prefName = (typeof p === 'string' ? p : p.name)?.toLowerCase();
         if (!prefName) return;
-        
         totalPreferences++;
         const prefTable = studentTableMap[prefName];
         if (prefTable === studentTable) {
@@ -77,43 +75,29 @@ const SeatingChart = () => {
         }
       });
     });
-
-    const percentage = totalPreferences > 0 
-      ? Math.round((satisfiedPreferences / totalPreferences) * 100) 
-      : 0;
-
-    return { percentage, satisfied: satisfiedPreferences, total: totalPreferences };
+    const percentage = totalPreferences > 0 ? Math.round(satisfiedPreferences / totalPreferences * 100) : 0;
+    return {
+      percentage,
+      satisfied: satisfiedPreferences,
+      total: totalPreferences
+    };
   };
-
   const loadArrangements = async () => {
     try {
-      const [arrangementsResult, prefsResult] = await Promise.all([
-        supabase
-          .from("seating_arrangements")
-          .select("*")
-          .eq("class_id", classId)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("student_preferences")
-          .select("student_id, preferences, students(name)")
-          .eq("class_id", classId)
-      ]);
-
+      const [arrangementsResult, prefsResult] = await Promise.all([supabase.from("seating_arrangements").select("*").eq("class_id", classId).order("created_at", {
+        ascending: false
+      }), supabase.from("student_preferences").select("student_id, preferences, students(name)").eq("class_id", classId)]);
       if (arrangementsResult.error) throw arrangementsResult.error;
-      
       const data = arrangementsResult.data || [];
       const prefs = (prefsResult.data || []) as StudentPreference[];
-      
       setArrangements(data);
       setStudentPreferences(prefs);
-      
       if (data.length > 0) {
         // Find the arrangement with highest preference satisfaction
         let bestArrangement = data[0].arrangement;
         let bestArrangementId = data[0].id;
         let bestPercentage = -1;
-        
-        data.forEach((arr) => {
+        data.forEach(arr => {
           const stats = calculateSatisfaction(arr.arrangement, prefs);
           if (stats.percentage > bestPercentage) {
             bestPercentage = stats.percentage;
@@ -121,7 +105,6 @@ const SeatingChart = () => {
             bestArrangementId = arr.id;
           }
         });
-        
         setCurrentArrangement(bestArrangement);
         setCurrentArrangementId(bestArrangementId);
         setHasUnsavedChanges(false);
@@ -132,24 +115,28 @@ const SeatingChart = () => {
       setLoading(false);
     }
   };
-
   const loadPreferences = async () => {
     // Preferences are now loaded together with arrangements
   };
 
   // Drag and drop handlers
   const handleDragStart = (tableIndex: number, seatIndex: number, student: any) => {
-    setDraggedStudent({ tableIndex, seatIndex, student });
+    setDraggedStudent({
+      tableIndex,
+      seatIndex,
+      student
+    });
   };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
-
   const handleDrop = (targetTableIndex: number, targetSeatIndex: number) => {
     if (!draggedStudent || !currentArrangement) return;
-
-    const { tableIndex: sourceTableIndex, seatIndex: sourceSeatIndex, student } = draggedStudent;
+    const {
+      tableIndex: sourceTableIndex,
+      seatIndex: sourceSeatIndex,
+      student
+    } = draggedStudent;
 
     // Don't do anything if dropping on the same seat
     if (sourceTableIndex === targetTableIndex && sourceSeatIndex === targetSeatIndex) {
@@ -159,33 +146,29 @@ const SeatingChart = () => {
 
     // Create a deep copy of the arrangement
     const newArrangement = JSON.parse(JSON.stringify(currentArrangement));
-    
+
     // Get the target student (if any)
     const targetStudent = newArrangement.tables[targetTableIndex].seats[targetSeatIndex].student;
-    
+
     // Swap the students
     newArrangement.tables[targetTableIndex].seats[targetSeatIndex].student = student;
     newArrangement.tables[sourceTableIndex].seats[sourceSeatIndex].student = targetStudent;
-
     setCurrentArrangement(newArrangement);
     setHasUnsavedChanges(true);
     setDraggedStudent(null);
   };
-
   const saveArrangement = async () => {
     if (!currentArrangementId || !currentArrangement) return;
-    
     try {
-      const { error } = await supabase
-        .from("seating_arrangements")
-        .update({ arrangement: currentArrangement })
-        .eq("id", currentArrangementId);
-      
+      const {
+        error
+      } = await supabase.from("seating_arrangements").update({
+        arrangement: currentArrangement
+      }).eq("id", currentArrangementId);
       if (error) throw error;
-      
       toast.success("Arrangement saved!");
       setHasUnsavedChanges(false);
-      
+
       // Reload to sync state
       loadArrangements();
     } catch (error: any) {
@@ -200,21 +183,22 @@ const SeatingChart = () => {
 
   // Calculate satisfaction for all arrangements and find the best ones
   const arrangementStats = useMemo(() => {
-    const stats = arrangements.map((arr) => ({
+    const stats = arrangements.map(arr => ({
       id: arr.id,
       ...calculateSatisfaction(arr.arrangement, studentPreferences)
     }));
-    
+
     // Find the highest percentage
     const maxPercentage = Math.max(...stats.map(s => s.percentage), 0);
-    
-    return { stats, maxPercentage };
+    return {
+      stats,
+      maxPercentage
+    };
   }, [arrangements, studentPreferences]);
-
   const getArrangementStars = (arrId: string) => {
     const stat = arrangementStats.stats.find(s => s.id === arrId);
     if (!stat || stat.total === 0 || arrangementStats.maxPercentage === 0) return 0;
-    
+
     // Only show stars for arrangements at the max percentage
     if (stat.percentage === arrangementStats.maxPercentage) {
       return 1; // Single star for best arrangement(s)
@@ -226,18 +210,12 @@ const SeatingChart = () => {
   const optimizeSeating = (students: any[], tables: any[], preferences: StudentPreference[]) => {
     // Build preference graph: studentName -> list of preferred names
     const prefGraph: Record<string, string[]> = {};
-    preferences.forEach((pref) => {
+    preferences.forEach(pref => {
       const studentName = pref.students?.name?.toLowerCase();
       if (!studentName) return;
-      
-      const prefArray = Array.isArray(pref.preferences) 
-        ? pref.preferences 
-        : pref.preferences?.students;
-      
+      const prefArray = Array.isArray(pref.preferences) ? pref.preferences : pref.preferences?.students;
       if (Array.isArray(prefArray)) {
-        prefGraph[studentName] = prefArray
-          .map((p: any) => (typeof p === 'string' ? p : p.name)?.toLowerCase())
-          .filter(Boolean);
+        prefGraph[studentName] = prefArray.map((p: any) => (typeof p === 'string' ? p : p.name)?.toLowerCase()).filter(Boolean);
       }
     });
 
@@ -265,7 +243,6 @@ const SeatingChart = () => {
     sortedStudents.forEach(student => {
       const name = student.name?.toLowerCase();
       if (assigned.has(name)) return;
-
       const cluster = [name];
       assigned.add(name);
 
@@ -277,7 +254,6 @@ const SeatingChart = () => {
           assigned.add(prefName);
         }
       });
-
       clusters.push(cluster);
     });
 
@@ -296,16 +272,14 @@ const SeatingChart = () => {
 
     // Assign clusters to tables, trying to keep clusters together
     const sortedClusters = [...clusters].sort((a, b) => b.length - a.length);
-    
     sortedClusters.forEach(cluster => {
       // Find table with most space that can fit as much of the cluster as possible
       let bestTableIdx = 0;
       let bestScore = -1;
-
       tableAssignments.forEach((table, idx) => {
         const remaining = tableCapacities[idx] - table.length;
         if (remaining <= 0) return;
-        
+
         // Score based on how many cluster members already at this table + space available
         let score = remaining >= cluster.length ? 100 : 0; // Bonus for fitting whole cluster
         cluster.forEach(name => {
@@ -313,7 +287,6 @@ const SeatingChart = () => {
             score += getAffinity(name, seated);
           });
         });
-        
         if (score > bestScore) {
           bestScore = score;
           bestTableIdx = idx;
@@ -338,7 +311,9 @@ const SeatingChart = () => {
 
     // Convert names back to student objects
     const nameToStudent: Record<string, any> = {};
-    students.forEach(s => { nameToStudent[s.name?.toLowerCase()] = s; });
+    students.forEach(s => {
+      nameToStudent[s.name?.toLowerCase()] = s;
+    });
 
     // Build final arrangement
     return {
@@ -346,28 +321,22 @@ const SeatingChart = () => {
         ...table,
         seats: table.seats.map((seat: any, seatIdx: number) => ({
           ...seat,
-          student: nameToStudent[tableAssignments[tableIdx][seatIdx]] || null,
-        })),
-      })),
+          student: nameToStudent[tableAssignments[tableIdx][seatIdx]] || null
+        }))
+      }))
     };
   };
-
   const generateNewArrangement = async () => {
     setLoading(true);
     try {
-      const { data: layout } = await supabase
-        .from("table_layouts")
-        .select("*")
-        .eq("class_id", classId)
-        .eq("is_active", true)
-        .maybeSingle();
-
+      const {
+        data: layout
+      } = await supabase.from("table_layouts").select("*").eq("class_id", classId).eq("is_active", true).maybeSingle();
       if (!layout) {
         toast.error("Please set up table layout first");
         setLoading(false);
         return;
       }
-
       let studentsToUse: any[] = [];
 
       // If there's an existing arrangement, use the same students
@@ -386,34 +355,23 @@ const SeatingChart = () => {
       // If no previous arrangement or no students found, fetch from database
       if (studentsToUse.length === 0) {
         // Fetch all students and their preference status
-        const [studentsResult, prefsStatusResult] = await Promise.all([
-          supabase
-            .from("students")
-            .select("*")
-            .eq("class_id", classId),
-          supabase
-            .from("student_preferences")
-            .select("student_id, status")
-            .eq("class_id", classId)
-        ]);
-
+        const [studentsResult, prefsStatusResult] = await Promise.all([supabase.from("students").select("*").eq("class_id", classId), supabase.from("student_preferences").select("student_id, status").eq("class_id", classId)]);
         const allStudents = studentsResult.data || [];
         const prefStatuses = prefsStatusResult.data || [];
-        
+
         // Build a map of student_id -> status
         const statusMap: Record<string, string> = {};
-        prefStatuses.forEach((p) => {
+        prefStatuses.forEach(p => {
           statusMap[p.student_id] = p.status;
         });
-        
+
         // Filter out students who are declined or pending
         // Include: approved students OR students with no preference submitted
-        studentsToUse = allStudents.filter((student) => {
+        studentsToUse = allStudents.filter(student => {
           const status = statusMap[student.id];
           // Include if no preference submitted, or if approved
           return !status || status === 'approved';
         });
-
         if (studentsToUse.length === 0) {
           toast.error("No approved students to arrange. Please approve some student preferences first.");
           setLoading(false);
@@ -422,37 +380,37 @@ const SeatingChart = () => {
       }
 
       // Fetch fresh preferences (only approved ones)
-      const { data: prefs } = await supabase
-        .from("student_preferences")
-        .select("student_id, preferences, status, students(name)")
-        .eq("class_id", classId)
-        .eq("status", "approved");
-
+      const {
+        data: prefs
+      } = await supabase.from("student_preferences").select("student_id, preferences, status, students(name)").eq("class_id", classId).eq("status", "approved");
       const layoutData = layout.layout as any;
       const tables = layoutData.tables || [];
-      
       let arrangement;
       if (prefs && prefs.length > 0) {
         // Generate multiple candidate arrangements and rank them
         const numCandidates = 20; // Generate 20 candidates
-        const candidates: { arrangement: any; score: number }[] = [];
-        
+        const candidates: {
+          arrangement: any;
+          score: number;
+        }[] = [];
         for (let i = 0; i < numCandidates; i++) {
           // Shuffle with different randomness each time
           const shuffled = [...studentsToUse].sort(() => Math.random() - 0.5);
           const candidate = optimizeSeating(shuffled, tables, prefs as StudentPreference[]);
           const stats = calculateSatisfaction(candidate, prefs as StudentPreference[]);
-          candidates.push({ arrangement: candidate, score: stats.percentage });
+          candidates.push({
+            arrangement: candidate,
+            score: stats.percentage
+          });
         }
-        
+
         // Sort by score descending (best first)
         candidates.sort((a, b) => b.score - a.score);
-        
+
         // Pick the arrangement based on how many already exist
         // First generation = best (index 0), second = second best (index 1), etc.
         const targetIndex = Math.min(arrangements.length, candidates.length - 1);
         arrangement = candidates[targetIndex].arrangement;
-        
         const rank = targetIndex + 1;
         const ordinal = rank === 1 ? "best" : rank === 2 ? "2nd best" : rank === 3 ? "3rd best" : `${rank}th best`;
         toast.success(`Generated ${ordinal} arrangement (${candidates[targetIndex].score}% preferences met)`);
@@ -466,22 +424,22 @@ const SeatingChart = () => {
             seats: table.seats.map((seat: any) => {
               const student = shuffled[studentIndex] || null;
               if (student) studentIndex++;
-              return { ...seat, student };
-            }),
-          })),
+              return {
+                ...seat,
+                student
+              };
+            })
+          }))
         };
         toast.success("Random seating arrangement generated!");
       }
-
-      const { error } = await supabase
-        .from("seating_arrangements")
-        .insert({
-          class_id: classId,
-          arrangement,
-        });
-
+      const {
+        error
+      } = await supabase.from("seating_arrangements").insert({
+        class_id: classId,
+        arrangement
+      });
       if (error) throw error;
-      
       loadArrangements();
     } catch (error: any) {
       toast.error(error.message || "Failed to generate arrangement");
@@ -489,25 +447,20 @@ const SeatingChart = () => {
       setLoading(false);
     }
   };
-
   if (loading && arrangements.length === 0) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-
-  return (
-    <div className="p-4 md:p-8">
+  return <div className="p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             🥔View Charts🥔
           </h1>
           <div className="flex gap-2">
-            {hasUnsavedChanges && (
-              <Button variant="default" onClick={saveArrangement}>
+            {hasUnsavedChanges && <Button variant="default" onClick={saveArrangement}>
                 <Save className="mr-2 h-4 w-4" />
                 Save Changes
-              </Button>
-            )}
+              </Button>}
             <Button variant="playful" onClick={generateNewArrangement} disabled={loading}>
               <RefreshCw className="mr-2 h-4 w-4" />
               Generate New
@@ -515,57 +468,31 @@ const SeatingChart = () => {
           </div>
         </div>
 
-        {hasUnsavedChanges && (
-          <div className="mb-4 p-3 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-lg text-sm flex items-center gap-2">
+        {hasUnsavedChanges && <div className="mb-4 p-3 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-lg text-sm flex items-center gap-2">
             <GripVertical className="h-4 w-4" />
             Drag students between seats to rearrange. Don't forget to save your changes!
-          </div>
-        )}
+          </div>}
 
-        {currentArrangement ? (
-          <Card className="p-8 shadow-[var(--shadow-glow)]">
+        {currentArrangement ? <Card className="p-8 shadow-[var(--shadow-glow)]">
             <div className="grid gap-8">
-              {currentArrangement.tables?.map((table: any, tableIndex: number) => (
-                <div
-                  key={tableIndex}
-                  className="border-2 border-primary/30 rounded-lg p-6 bg-card/50"
-                >
+              {currentArrangement.tables?.map((table: any, tableIndex: number) => <div key={tableIndex} className="border-2 border-primary/30 rounded-lg p-6 bg-card/50">
                   <h3 className="text-lg font-semibold mb-4">Table {tableIndex + 1}</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {table.seats?.map((seat: any, seatIndex: number) => (
-                      <div
-                        key={seatIndex}
-                        className={`flex justify-center p-2 rounded-lg transition-all ${
-                          draggedStudent ? 'border-2 border-dashed border-primary/50 bg-primary/5' : ''
-                        }`}
-                        onDragOver={handleDragOver}
-                        onDrop={() => handleDrop(tableIndex, seatIndex)}
-                      >
-                        {seat.student ? (
-                          <div
-                            draggable
-                            onDragStart={() => handleDragStart(tableIndex, seatIndex, seat.student)}
-                            className="cursor-grab active:cursor-grabbing hover:scale-105 transition-transform"
-                          >
+                    {table.seats?.map((seat: any, seatIndex: number) => <div key={seatIndex} className={`flex justify-center p-2 rounded-lg transition-all ${draggedStudent ? 'border-2 border-dashed border-primary/50 bg-primary/5' : ''}`} onDragOver={handleDragOver} onDrop={() => handleDrop(tableIndex, seatIndex)}>
+                        {seat.student ? <div draggable onDragStart={() => handleDragStart(tableIndex, seatIndex, seat.student)} className="cursor-grab active:cursor-grabbing hover:scale-105 transition-transform">
                             <DuckAvatar name={seat.student.name} size="md" />
-                          </div>
-                        ) : (
-                          <div className="w-16 h-20 border-2 border-dashed border-muted-foreground/30 bg-muted/20 rounded-lg flex items-center justify-center text-3xl opacity-50">
+                          </div> : <div className="w-16 h-20 border-2 border-dashed border-muted-foreground/30 bg-muted/20 rounded-lg flex items-center justify-center text-3xl opacity-50">
                             🥔
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                          </div>}
+                      </div>)}
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
             
             {/* Preference satisfaction stats */}
-            {preferenceStats.total > 0 && (
-              <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+            {preferenceStats.total > 0 && <div className="mt-6 p-4 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <Heart className="h-5 w-5 text-pink-500" />
+                  
                   <span className="font-semibold">Preferences Met</span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -577,75 +504,51 @@ const SeatingChart = () => {
                 <p className="text-sm text-muted-foreground mt-2">
                   {preferenceStats.satisfied} of {preferenceStats.total} student preferences satisfied
                 </p>
-              </div>
-            )}
-          </Card>
-        ) : (
-          <Card className="p-12 text-center">
+              </div>}
+          </Card> : <Card className="p-12 text-center">
             <p className="text-muted-foreground text-lg mb-4">
               No seating arrangement yet
             </p>
             <Button variant="playful" onClick={generateNewArrangement}>
               Generate First Arrangement
             </Button>
-          </Card>
-        )}
+          </Card>}
 
-        {arrangements.length > 0 && (
-          <div className="mt-8">
+        {arrangements.length > 0 && <div className="mt-8">
             <h2 className="text-2xl font-bold mb-4">All Arrangements</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              {arrangements.map((arr, index) => (
-                <Card 
-                  key={arr.id}
-                  className={`p-4 cursor-pointer transition-all hover:scale-105 ${
-                    currentArrangementId === arr.id 
-                      ? 'border-2 border-primary shadow-[var(--shadow-glow)]' 
-                      : 'border border-primary/30'
-                  }`}
-                  onClick={() => {
-                    setCurrentArrangement(arr.arrangement);
-                    setCurrentArrangementId(arr.id);
-                    setHasUnsavedChanges(false);
-                  }}
-                >
+              {arrangements.map((arr, index) => <Card key={arr.id} className={`p-4 cursor-pointer transition-all hover:scale-105 ${currentArrangementId === arr.id ? 'border-2 border-primary shadow-[var(--shadow-glow)]' : 'border border-primary/30'}`} onClick={() => {
+            setCurrentArrangement(arr.arrangement);
+            setCurrentArrangementId(arr.id);
+            setHasUnsavedChanges(false);
+          }}>
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-semibold text-lg flex items-center gap-1">
                         {index === 0 ? '🌟 Latest' : `#${arrangements.length - index}`}
-                        {getArrangementStars(arr.id) > 0 && (
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 ml-1" />
-                        )}
+                        {getArrangementStars(arr.id) > 0 && <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 ml-1" />}
                       </h3>
                       <p className="text-sm text-muted-foreground mt-1">
                         {new Date(arr.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                       </p>
-                      {arrangementStats.stats.find(s => s.id === arr.id)?.total > 0 && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                      {arrangementStats.stats.find(s => s.id === arr.id)?.total > 0 && <p className="text-xs text-muted-foreground mt-1">
                           {arrangementStats.stats.find(s => s.id === arr.id)?.percentage}% preferences met
-                        </p>
-                      )}
+                        </p>}
                     </div>
-                    {currentArrangementId === arr.id && (
-                      <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
+                    {currentArrangementId === arr.id && <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
                         Viewing
-                      </span>
-                    )}
+                      </span>}
                   </div>
-                </Card>
-              ))}
+                </Card>)}
             </div>
-          </div>
-        )}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default SeatingChart;
