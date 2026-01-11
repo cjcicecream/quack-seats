@@ -278,7 +278,8 @@ const StudentPreferences = () => {
                       type="text"
                       placeholder="Enter student name (optional)"
                       value={pref}
-                      onChange={(e) => updatePreference(index, e.target.value)}
+                      onChange={(e) => updatePreference(index, e.target.value.toUpperCase())}
+                      className="uppercase"
                     />
                   </div>
                 ))}
@@ -317,7 +318,8 @@ const StudentPreferences = () => {
                         type="text"
                         placeholder="Enter student name (optional)"
                         value={avoid}
-                        onChange={(e) => updateAvoidStudent(index, e.target.value)}
+                        onChange={(e) => updateAvoidStudent(index, e.target.value.toUpperCase())}
+                        className="uppercase"
                       />
                     </div>
                   ))}
