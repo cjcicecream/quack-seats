@@ -113,10 +113,11 @@ const StudentLogin = () => {
               <Input
                 id="name"
                 type="text"
-                placeholder="e.g., John D"
+                placeholder="e.g., JOHN D"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value.toUpperCase())}
                 required
+                className="uppercase"
               />
             </div>
             
