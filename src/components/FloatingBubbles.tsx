@@ -47,7 +47,7 @@ const createBubble = (id: number, fromEdge: 'left' | 'right' | 'bottom' | null =
     angle = Math.random() * Math.PI * 2;
   }
   
-  const speed = 0.006 + Math.random() * 0.004;
+  const speed = 0.002 + Math.random() * 0.002;
   
   return {
     id,
