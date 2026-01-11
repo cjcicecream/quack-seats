@@ -1,51 +1,64 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 interface Bubble {
   id: number;
   size: number;
-  left: number;
-  bottom: number;
-  delay: number;
-  duration: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  targetAngle: number;
+  currentAngle: number;
+  speed: number;
   colorVariant: 'pink' | 'blue' | 'purple';
-  isFragment?: boolean;
-  isPopping?: boolean;
-  isEntering?: boolean;
-  enterFrom?: 'left' | 'right';
-  // Variation properties
   rotation: number;
   shineOffset: { x: number; y: number };
   reflectionScale: number;
   opacity: number;
-  // Reflection position variation
   reflectionPosition: { top: number; left: number };
 }
 
-
 const MIN_BUBBLES = 7;
 const MAX_BUBBLES = 10;
+const TURN_SPEED = 0.008; // How fast bubbles turn (lower = smoother)
+const DIRECTION_CHANGE_INTERVAL = 3000; // How often to pick new direction (ms)
 
-const createBubble = (id: number, isNew: boolean = false): Bubble => {
-  const cols = 5;
-  const rows = 2;
-  const col = id % cols;
-  const row = Math.floor(id / cols) % rows;
-  const cellWidth = 100 / cols;
-  const cellHeight = 100 / rows;
+const colorVariants = ['pink', 'blue', 'purple'] as const;
+
+const createBubble = (id: number, fromEdge: 'left' | 'right' | 'bottom' | null = null): Bubble => {
+  let x: number, y: number, angle: number;
   
-  // New bubbles enter from the side
-  const enterFrom = Math.random() > 0.5 ? 'left' : 'right';
-  const startLeft = isNew 
-    ? (enterFrom === 'left' ? -15 : 115) 
-    : col * cellWidth + Math.random() * cellWidth * 0.8;
+  if (fromEdge === 'left') {
+    x = -5;
+    y = 20 + Math.random() * 60;
+    angle = -Math.PI / 4 + Math.random() * Math.PI / 2; // Pointing right-ish
+  } else if (fromEdge === 'right') {
+    x = 105;
+    y = 20 + Math.random() * 60;
+    angle = Math.PI / 2 + Math.random() * Math.PI; // Pointing left-ish
+  } else if (fromEdge === 'bottom') {
+    x = 10 + Math.random() * 80;
+    y = -5;
+    angle = Math.PI / 4 + Math.random() * Math.PI / 2; // Pointing up-ish
+  } else {
+    // Random position for initial bubbles
+    x = 10 + Math.random() * 80;
+    y = 10 + Math.random() * 80;
+    angle = Math.random() * Math.PI * 2;
+  }
+  
+  const speed = 0.015 + Math.random() * 0.01;
   
   return {
     id,
     size: Math.random() * 60 + 50,
-    left: startLeft,
-    bottom: row * cellHeight + Math.random() * cellHeight * 0.8,
-    delay: isNew ? 0 : Math.random() * 8,
-    duration: Math.random() * 3 + 4,
+    x,
+    y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    targetAngle: angle,
+    currentAngle: angle,
+    speed,
     colorVariant: colorVariants[Math.floor(Math.random() * colorVariants.length)],
     rotation: Math.random() * 360,
     shineOffset: { x: Math.random() * 10 - 5, y: Math.random() * 10 - 5 },
@@ -55,13 +68,8 @@ const createBubble = (id: number, isNew: boolean = false): Bubble => {
       top: 8 + Math.random() * 12,
       left: 8 + Math.random() * 12
     },
-    isEntering: isNew,
-    enterFrom: isNew ? enterFrom : undefined,
   };
 };
-
-const colorVariants = ['pink', 'blue', 'purple'] as const;
-
 
 const FloatingBubbles = () => {
   const [bubbles, setBubbles] = useState<Bubble[]>(() => {
@@ -69,10 +77,12 @@ const FloatingBubbles = () => {
     return Array.from({ length: initialCount }, (_, i) => createBubble(i));
   });
 
-  const [nextId, setNextId] = useState(10);
+  const [nextId, setNextId] = useState(MAX_BUBBLES);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const animationRef = useRef<number>();
+  const lastTimeRef = useRef<number>(0);
+  const directionChangeRef = useRef<number>(0);
 
-  // Classic bubble pop sound - quick, snappy "pop" like the sound effect video
   const playPopSound = useCallback(() => {
     try {
       if (!audioContextRef.current) {
@@ -81,7 +91,6 @@ const FloatingBubbles = () => {
       const ctx = audioContextRef.current;
       const now = ctx.currentTime;
       
-      // High-pitched soft pop
       const mainPop = ctx.createOscillator();
       const mainGain = ctx.createGain();
       mainPop.type = 'sine';
@@ -92,7 +101,6 @@ const FloatingBubbles = () => {
       mainPop.connect(mainGain);
       mainGain.connect(ctx.destination);
       
-      // Higher click
       const click = ctx.createOscillator();
       const clickGain = ctx.createGain();
       click.type = 'sine';
@@ -103,7 +111,6 @@ const FloatingBubbles = () => {
       click.connect(clickGain);
       clickGain.connect(ctx.destination);
       
-      // Higher bubbly undertone
       const wet = ctx.createOscillator();
       const wetGain = ctx.createGain();
       wet.type = 'sine';
@@ -114,7 +121,6 @@ const FloatingBubbles = () => {
       wet.connect(wetGain);
       wetGain.connect(ctx.destination);
       
-      // Very quiet air puff
       const noiseLength = ctx.sampleRate * 0.015;
       const noiseBuffer = ctx.createBuffer(1, noiseLength, ctx.sampleRate);
       const noiseData = noiseBuffer.getChannelData(0);
@@ -138,13 +144,11 @@ const FloatingBubbles = () => {
       noiseFilter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       
-      // Start all
       mainPop.start(now);
       click.start(now);
       wet.start(now);
       noiseSource.start(now);
       
-      // Stop all
       mainPop.stop(now + 0.12);
       click.stop(now + 0.04);
       wet.stop(now + 0.15);
@@ -154,21 +158,99 @@ const FloatingBubbles = () => {
     }
   }, []);
 
+  // Animation loop
+  useEffect(() => {
+    const animate = (time: number) => {
+      const deltaTime = lastTimeRef.current ? time - lastTimeRef.current : 16;
+      lastTimeRef.current = time;
+      
+      // Periodically update target directions
+      directionChangeRef.current += deltaTime;
+      const shouldChangeDirection = directionChangeRef.current > DIRECTION_CHANGE_INTERVAL;
+      if (shouldChangeDirection) {
+        directionChangeRef.current = 0;
+      }
+      
+      setBubbles(prev => {
+        let poppedCount = 0;
+        const edges: ('left' | 'right' | 'bottom')[] = [];
+        
+        const updated = prev.map(bubble => {
+          // Check if bubble is off-screen (popped at edge)
+          if (bubble.x < -8 || bubble.x > 108 || bubble.y < -8 || bubble.y > 108) {
+            poppedCount++;
+            if (bubble.x < -8) edges.push('right');
+            else if (bubble.x > 108) edges.push('left');
+            else edges.push('bottom');
+            return null;
+          }
+          
+          // Smoothly interpolate current angle towards target angle
+          let angleDiff = bubble.targetAngle - bubble.currentAngle;
+          // Normalize angle difference to [-PI, PI]
+          while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+          while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+          
+          const newAngle = bubble.currentAngle + angleDiff * TURN_SPEED * deltaTime;
+          
+          // Update velocity based on current angle
+          const newVx = Math.cos(newAngle) * bubble.speed;
+          const newVy = Math.sin(newAngle) * bubble.speed;
+          
+          // Pick new target direction occasionally (gentle wandering)
+          let newTargetAngle = bubble.targetAngle;
+          if (shouldChangeDirection && Math.random() < 0.4) {
+            // Small random adjustment to direction (max ~30 degrees)
+            newTargetAngle = bubble.currentAngle + (Math.random() - 0.5) * Math.PI / 3;
+          }
+          
+          return {
+            ...bubble,
+            x: bubble.x + newVx * deltaTime,
+            y: bubble.y + newVy * deltaTime,
+            vx: newVx,
+            vy: newVy,
+            currentAngle: newAngle,
+            targetAngle: newTargetAngle,
+            rotation: bubble.rotation + deltaTime * 0.01, // Gentle rotation
+          };
+        }).filter(Boolean) as Bubble[];
+        
+        // Spawn new bubbles from edges to replace popped ones
+        if (poppedCount > 0 && updated.length < MIN_BUBBLES) {
+          const spawnCount = MIN_BUBBLES - updated.length;
+          for (let i = 0; i < spawnCount; i++) {
+            const edge = edges[i % edges.length] || (['left', 'right', 'bottom'] as const)[Math.floor(Math.random() * 3)];
+            updated.push(createBubble(nextId + i, edge));
+          }
+          setNextId(id => id + spawnCount);
+        }
+        
+        return updated;
+      });
+      
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animationRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [nextId]);
 
   const handleBubblePop = useCallback((bubble: Bubble, e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // Play pop sound
     playPopSound();
     
-    // Remove bubble immediately and spawn new one to maintain count
     setBubbles(prev => {
       const remaining = prev.filter(b => b.id !== bubble.id);
-      // Spawn new bubble if below minimum
       if (remaining.length < MIN_BUBBLES) {
+        const edge = (['left', 'right', 'bottom'] as const)[Math.floor(Math.random() * 3)];
         const newId = nextId;
         setNextId(id => id + 1);
-        return [...remaining, createBubble(newId, true)];
+        return [...remaining, createBubble(newId, edge)];
       }
       return remaining;
     });
@@ -179,20 +261,16 @@ const FloatingBubbles = () => {
       {bubbles.map((bubble) => (
         <div
           key={bubble.id}
-          className={`soap-bubble soap-bubble-${bubble.colorVariant} pointer-events-auto cursor-pointer transition-transform ${
-            bubble.isPopping ? 'animate-bubble-pop' : 'hover:scale-110'
-          } ${bubble.isEntering ? (bubble.enterFrom === 'left' ? 'animate-bubble-enter-left' : 'animate-bubble-enter-right') : ''}`}
+          className={`soap-bubble-static soap-bubble-${bubble.colorVariant} pointer-events-auto cursor-pointer transition-transform duration-100 hover:scale-110`}
           style={{
             width: `${bubble.size}px`,
             height: `${bubble.size}px`,
-            left: `${bubble.left}%`,
-            bottom: `${bubble.bottom}%`,
-            animationDelay: bubble.isPopping ? '0s' : `${bubble.delay}s`,
-            animationDuration: bubble.isPopping ? '0.3s' : (bubble.isEntering ? '6s' : `${bubble.duration}s`),
+            left: `${bubble.x}%`,
+            bottom: `${bubble.y}%`,
             transform: `rotate(${bubble.rotation}deg)`,
             opacity: bubble.opacity,
           }}
-          onClick={(e) => !bubble.isPopping && handleBubblePop(bubble, e)}
+          onClick={(e) => handleBubblePop(bubble, e)}
         >
           <div 
             className="bubble-shine" 
