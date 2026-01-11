@@ -82,7 +82,7 @@ const TeacherAuth = () => {
             onClick={() => navigate("/")}
             className="shrink-0"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 text-black" />
           </Button>
           <button 
             onClick={() => navigate("/")}
