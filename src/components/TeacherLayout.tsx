@@ -43,7 +43,7 @@ export function TeacherLayout({ children }: TeacherLayoutProps) {
             className="inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
             aria-label={location.pathname === "/teacher/dashboard" ? "Back to home" : "Back to dashboard"}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 text-black" />
           </button>
           <button 
             onClick={() => navigate("/")}
