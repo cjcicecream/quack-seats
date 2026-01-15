@@ -233,15 +233,7 @@ const TeacherDashboard = () => {
                   onClick={() => navigate(`/teacher/class/${cls.id}/settings`)}
                 >
                   <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => navigate(`/teacher/class/${cls.id}/preferences`)}
-                >
-                  <ClipboardList className="mr-2 h-4 w-4" />
-                  Your Preferences
+                  Class Settings
                 </Button>
                 <Button
                   variant="outline"
