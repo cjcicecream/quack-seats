@@ -252,10 +252,21 @@ const ManagePreferences = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <CardTitle>{pref.students.name}</CardTitle>
                           {pref.status === "approved" && (
-                            <Badge className="bg-green-500">Approved</Badge>
+                            <Badge 
+                              className="bg-green-500 cursor-pointer hover:bg-green-600 transition-colors"
+                              onClick={() => updateStatus(pref.id, "declined")}
+                            >
+                              Approved
+                            </Badge>
                           )}
                           {pref.status === "declined" && (
-                            <Badge variant="destructive">Declined</Badge>
+                            <Badge 
+                              variant="destructive" 
+                              className="cursor-pointer hover:bg-destructive/80 transition-colors"
+                              onClick={() => updateStatus(pref.id, "approved")}
+                            >
+                              Declined
+                            </Badge>
                           )}
                           {pref.status === "pending" && (
                             <Badge variant="secondary">Pending</Badge>
