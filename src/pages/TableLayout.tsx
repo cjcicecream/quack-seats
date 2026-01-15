@@ -132,7 +132,7 @@ const TableLayout = () => {
                   onChange={(e) => setNewTableSeats(parseInt(e.target.value) || 1)}
                   className="h-8 w-16"
                 />
-                <Button variant="playful" size="sm" onClick={addTable}>
+                <Button variant="default" size="sm" onClick={addTable}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
