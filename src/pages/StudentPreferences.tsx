@@ -239,7 +239,7 @@ const StudentPreferences = () => {
                 <h3 className="text-base font-medium text-foreground">Students You'd Like to Sit With</h3>
                 {preferences.map((pref, index) => <div key={index} className="space-y-2">
                     <Label htmlFor={`pref-${index}`} className="text-sm font-normal text-muted-foreground">
-                      Preference #{index + 1} {index === 0 && "(most preferred)"}
+                      Preference #{index + 1} {index === 0 && maxPreferences > 1 && "(most preferred)"}
                     </Label>
                     <Input id={`pref-${index}`} type="text" placeholder="Enter student name (optional)" value={pref} onChange={e => updatePreference(index, e.target.value.toUpperCase())} className="uppercase" />
                   </div>)}
