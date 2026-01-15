@@ -261,7 +261,7 @@ const TeacherPreferences = () => {
                 <div>
                   <Label className="text-base font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
                     
-                    Must NOT Sit Together
+                    Must not Sit Together
                   </Label>
                   <p className="text-sm text-muted-foreground">These students will be kept at separate tables</p>
                 </div>
