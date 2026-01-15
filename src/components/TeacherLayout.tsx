@@ -47,9 +47,11 @@ export function TeacherLayout({ children }: TeacherLayoutProps) {
           </button>
           <button 
             onClick={() => navigate("/")}
-            className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            className="text-xl font-bold hover:opacity-80 transition-opacity"
           >
-            🥔potato groups🥔
+            <span className="inline-block">🥔</span>
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">potato groups</span>
+            <span className="inline-block">🥔</span>
           </button>
         </div>
         

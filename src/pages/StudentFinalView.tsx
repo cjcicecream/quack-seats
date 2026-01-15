@@ -110,9 +110,11 @@ const StudentFinalView = () => {
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <button 
           onClick={() => navigate("/")}
-          className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+          className="text-xl font-bold hover:opacity-80 transition-opacity"
         >
-          🥔potato groups🥔
+          <span className="inline-block">🥔</span>
+          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">potato groups</span>
+          <span className="inline-block">🥔</span>
         </button>
       </header>
       
@@ -137,8 +139,10 @@ const StudentFinalView = () => {
             </Button>
           </div>
 
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          🥔Final Seating Chart🥔
+        <h1 className="text-4xl font-bold mb-8 text-center">
+          <span className="inline-block">🥔</span>
+          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Final Seating Chart</span>
+          <span className="inline-block">🥔</span>
         </h1>
 
         {studentLocation && (

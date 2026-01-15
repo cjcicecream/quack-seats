@@ -13,8 +13,10 @@ const StudentSuccess = () => {
           <button onClick={() => navigate("/student/home")} className="p-2 hover:bg-muted rounded-lg transition-colors">
             <ArrowLeft className="w-5 h-5 text-black" />
           </button>
-          <button onClick={() => navigate("/")} className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-            🥔potato groups🥔
+          <button onClick={() => navigate("/")} className="text-xl font-bold hover:opacity-80 transition-opacity">
+            <span className="inline-block">🥔</span>
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">potato groups</span>
+            <span className="inline-block">🥔</span>
           </button>
         </div>
       </header>
