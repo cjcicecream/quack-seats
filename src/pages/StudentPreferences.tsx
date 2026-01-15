@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import FloatingBubbles from "@/components/FloatingBubbles";
 import { ArrowLeft, LogOut } from "lucide-react";
-
 const StudentPreferences = () => {
   const [preferences, setPreferences] = useState<string[]>([]);
   const [comments, setComments] = useState("");
@@ -26,30 +25,31 @@ const StudentPreferences = () => {
   const [seatingPosition, setSeatingPosition] = useState("");
   const [avoidStudents, setAvoidStudents] = useState<string[]>([]);
   const navigate = useNavigate();
-
   const checkStudent = async () => {
     const studentData = sessionStorage.getItem("student_data");
-    
     if (!studentData) {
       toast.error("Please join a class first");
       navigate("/student/login");
       return null;
     }
-    
     return JSON.parse(studentData);
   };
-
-  const loadPreviousPreferences = async (studentData: { id: string; class_id: string }) => {
+  const loadPreviousPreferences = async (studentData: {
+    id: string;
+    class_id: string;
+  }) => {
     try {
       // Use server-side edge function to get class settings and previous preferences
-      const { data, error } = await supabase.functions.invoke('student-auth', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('student-auth', {
         body: {
           action: 'get_class_settings',
           studentId: studentData.id,
           classId: studentData.class_id
         }
       });
-
       if (error || data?.error) {
         console.error("Error loading class settings:", error || data?.error);
         toast.error("Failed to load class settings. Please log in again.");
@@ -57,9 +57,10 @@ const StudentPreferences = () => {
         navigate("/student/login");
         return;
       }
-
-      const { classSettings: classData, previousPreferences: prefData } = data;
-
+      const {
+        classSettings: classData,
+        previousPreferences: prefData
+      } = data;
       if (classData) {
         setMaxPreferences(classData.max_preferences);
         setClassName(classData.name);
@@ -69,30 +70,28 @@ const StudentPreferences = () => {
           allow_avoid_students: classData.allow_avoid_students || false
         });
         setPreferences(Array(classData.max_preferences).fill(""));
-        
+
         // Initialize avoid students array if enabled
         if (classData.allow_avoid_students) {
           setAvoidStudents(Array(Math.min(2, classData.max_preferences)).fill(""));
         }
       }
-
       if (prefData) {
         const prefs = prefData.preferences as any;
-        
+
         // Load seating preferences
         if (prefs.students) {
           const sortedPrefs = prefs.students.sort((a: any, b: any) => a.rank - b.rank);
           const names = sortedPrefs.map((p: any) => p.name);
           setPreferences([...names, ...Array(Math.max(0, (classData?.max_preferences || 3) - names.length)).fill("")]);
         }
-        
+
         // Load other preferences
         if (prefs.gender) setGenderPreference(prefs.gender);
         if (prefs.seating_position) setSeatingPosition(prefs.seating_position);
         if (prefs.avoid_students) {
           setAvoidStudents([...prefs.avoid_students, ...Array(Math.max(0, 2 - prefs.avoid_students.length)).fill("")]);
         }
-        
         setComments(prefData.additional_comments || "");
       }
     } catch (error: any) {
@@ -101,7 +100,6 @@ const StudentPreferences = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     const init = async () => {
       const studentData = await checkStudent();
@@ -111,20 +109,16 @@ const StudentPreferences = () => {
     };
     init();
   }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const studentData = sessionStorage.getItem("student_data");
-      
       if (!studentData) {
         toast.error("Please join a class first");
         navigate("/student/login");
         return;
       }
-
       const student = JSON.parse(studentData);
 
       // Validate no duplicate names in seating preferences
@@ -154,7 +148,6 @@ const StudentPreferences = () => {
         setLoading(false);
         return;
       }
-
       const formattedPreferences: any = {
         students: filledPreferences.map((name, index) => ({
           name: name.trim(),
@@ -166,17 +159,18 @@ const StudentPreferences = () => {
       if (classSettings.allow_gender_preference && genderPreference) {
         formattedPreferences.gender = genderPreference;
       }
-      
       if (classSettings.allow_seating_position && seatingPosition) {
         formattedPreferences.seating_position = seatingPosition;
       }
-      
       if (classSettings.allow_avoid_students) {
         formattedPreferences.avoid_students = avoidStudents.filter(s => s.trim() !== "");
       }
 
       // Use server-side edge function to submit preferences securely
-      const { data, error } = await supabase.functions.invoke('student-auth', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('student-auth', {
         body: {
           action: 'submit_preferences',
           studentId: student.id,
@@ -185,11 +179,9 @@ const StudentPreferences = () => {
           additionalComments: comments.trim() || null
         }
       });
-
       if (error || data?.error) {
         throw new Error(data?.error || error?.message || 'Failed to submit preferences');
       }
-
       toast.success("Preferences submitted successfully! You can update them anytime before the teacher creates the final chart.");
       navigate("/student/success");
     } catch (error: any) {
@@ -198,45 +190,33 @@ const StudentPreferences = () => {
       setLoading(false);
     }
   };
-
   const handleLogout = () => {
     sessionStorage.removeItem("student_data");
     toast.success("Logged out successfully");
     navigate("/student/login");
   };
-
   const updatePreference = (index: number, value: string) => {
     const newPrefs = [...preferences];
     newPrefs[index] = value;
     setPreferences(newPrefs);
   };
-
   const updateAvoidStudent = (index: number, value: string) => {
     const newAvoid = [...avoidStudents];
     newAvoid[index] = value;
     setAvoidStudents(newAvoid);
   };
-
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <Link 
-          to="/"
-          className="flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity"
-        >
+        <Link to="/" className="flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity">
           <ArrowLeft className="h-5 w-5 text-black" />
           <span className="inline-block">🥔</span>
           <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">potato groups</span>
           <span className="inline-block">🥔</span>
         </Link>
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-        >
+        <Button variant="ghost" onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>
@@ -254,45 +234,26 @@ const StudentPreferences = () => {
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">potato groups</span>
               <span className="inline-block">🥔</span>
             </CardTitle>
-            {className && (
-              <div className="text-xl font-semibold text-foreground mt-2">
+            {className && <div className="text-xl font-semibold text-foreground mt-2">
                 Class: {className}
-              </div>
-            )}
-            <CardDescription className="text-lg">
-              Who would you like to sit with? (Rank your preferences)
-              {preferences.some(p => p.trim() !== "") && (
-                <span className="block mt-2 text-sm text-primary">
-                  ✓ Your previous preferences have been loaded. You can update them anytime!
-                </span>
-              )}
-            </CardDescription>
+              </div>}
+            
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Students You'd Like to Sit With</h3>
-                {preferences.map((pref, index) => (
-                  <div key={index} className="space-y-2">
+                {preferences.map((pref, index) => <div key={index} className="space-y-2">
                     <Label htmlFor={`pref-${index}`}>
                       Preference #{index + 1} {index === 0 && "(Most preferred)"}
                     </Label>
-                    <Input
-                      id={`pref-${index}`}
-                      type="text"
-                      placeholder="Enter student name (optional)"
-                      value={pref}
-                      onChange={(e) => updatePreference(index, e.target.value.toUpperCase())}
-                      className="uppercase"
-                    />
-                  </div>
-                ))}
+                    <Input id={`pref-${index}`} type="text" placeholder="Enter student name (optional)" value={pref} onChange={e => updatePreference(index, e.target.value.toUpperCase())} className="uppercase" />
+                  </div>)}
               </div>
 
-              {classSettings.allow_gender_preference && (
-                <div className="space-y-2 pt-4 border-t">
+              {classSettings.allow_gender_preference && <div className="space-y-2 pt-4 border-t">
                   <Label htmlFor="gender">Gender *</Label>
-                  <Select value={genderPreference || "none"} onValueChange={(value) => setGenderPreference(value === "none" ? "" : value)}>
+                  <Select value={genderPreference || "none"} onValueChange={value => setGenderPreference(value === "none" ? "" : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your gender" />
                     </SelectTrigger>
@@ -302,52 +263,28 @@ const StudentPreferences = () => {
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-              )}
+                </div>}
 
 
-              {classSettings.allow_avoid_students && (
-                <div className="space-y-4 pt-4 border-t">
+              {classSettings.allow_avoid_students && <div className="space-y-4 pt-4 border-t">
                   <h3 className="font-semibold text-lg">Students to Avoid (Optional)</h3>
                   <p className="text-sm text-muted-foreground">
                     Students you'd prefer NOT to sit near
                   </p>
-                  {avoidStudents.map((avoid, index) => (
-                    <div key={index} className="space-y-2">
+                  {avoidStudents.map((avoid, index) => <div key={index} className="space-y-2">
                       <Label htmlFor={`avoid-${index}`}>
                         Avoid #{index + 1}
                       </Label>
-                      <Input
-                        id={`avoid-${index}`}
-                        type="text"
-                        placeholder="Enter student name (optional)"
-                        value={avoid}
-                        onChange={(e) => updateAvoidStudent(index, e.target.value.toUpperCase())}
-                        className="uppercase"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+                      <Input id={`avoid-${index}`} type="text" placeholder="Enter student name (optional)" value={avoid} onChange={e => updateAvoidStudent(index, e.target.value.toUpperCase())} className="uppercase" />
+                    </div>)}
+                </div>}
 
               <div className="space-y-2 pt-4 border-t">
                 <Label htmlFor="comments">Additional Comments (Optional)</Label>
-                <Textarea
-                  id="comments"
-                  placeholder="Any other preferences or considerations..."
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  rows={4}
-                />
+                <Textarea id="comments" placeholder="Any other preferences or considerations..." value={comments} onChange={e => setComments(e.target.value)} rows={4} />
               </div>
 
-              <Button
-                type="submit"
-                variant="playful"
-                size="lg"
-                className="w-full"
-                disabled={loading}
-              >
+              <Button type="submit" variant="playful" size="lg" className="w-full" disabled={loading}>
                 {loading ? "Submitting..." : "Submit Preferences"}
               </Button>
             </form>
@@ -355,8 +292,6 @@ const StudentPreferences = () => {
         </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default StudentPreferences;
