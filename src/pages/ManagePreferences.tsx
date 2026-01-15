@@ -273,7 +273,7 @@ const ManagePreferences = () => {
                           )}
                         </div>
                         
-                        {/* Simple preview of preferences */}
+                        {/* Full list of preferences */}
                         <CardDescription className="text-sm">
                           {(() => {
                             // Handle both array format and {students: [...]} format
@@ -287,10 +287,8 @@ const ManagePreferences = () => {
                                   Wants to sit with: {" "}
                                   <span className="font-medium">
                                     {prefArray
-                                      .slice(0, 2)
                                       .map((p: any) => typeof p === 'string' ? p : p.name || 'Unknown')
                                       .join(", ")}
-                                    {prefArray.length > 2 && ` +${prefArray.length - 2} more`}
                                   </span>
                                 </>
                               );
