@@ -230,14 +230,8 @@ const StudentPreferences = () => {
         <Card className="shadow-[var(--shadow-glow)]">
           <CardHeader>
             <CardTitle className="text-3xl">
-              <span className="inline-block">🥔</span>
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">potato groups</span>
-              <span className="inline-block">🥔</span>
+              {className || "Loading..."}
             </CardTitle>
-            {className && <div className="text-xl font-semibold text-foreground mt-2">
-                Class: {className}
-              </div>}
-            
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
