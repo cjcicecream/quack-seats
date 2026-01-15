@@ -84,10 +84,12 @@ const StudentLogin = () => {
       <header className="h-14 border-b flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <Link 
           to="/"
-          className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity"
         >
           <ArrowLeft className="h-5 w-5 text-black" />
-          🥔potato groups🥔
+          <span className="inline-block">🥔</span>
+          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">potato groups</span>
+          <span className="inline-block">🥔</span>
         </Link>
       </header>
       

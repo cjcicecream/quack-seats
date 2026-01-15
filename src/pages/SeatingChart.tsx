@@ -453,8 +453,10 @@ const SeatingChart = () => {
   return <div className="p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            🥔View Charts🥔
+          <h1 className="text-4xl font-bold">
+            <span className="inline-block">🥔</span>
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">View Charts</span>
+            <span className="inline-block">🥔</span>
           </h1>
           <div className="flex gap-2">
             {hasUnsavedChanges && <Button variant="default" onClick={saveArrangement}>

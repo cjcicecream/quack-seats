@@ -211,8 +211,10 @@ const ManagePreferences = () => {
   return (
     <div className="p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-6 pb-1 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          🥔 Student Preferences 🥔
+        <h1 className="text-4xl font-bold mb-6 pb-1 text-center">
+          <span className="inline-block">🥔</span>
+          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"> Student Preferences </span>
+          <span className="inline-block">🥔</span>
         </h1>
 
         {/* Search bar */}
