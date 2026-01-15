@@ -236,17 +236,17 @@ const StudentPreferences = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Students You'd Like to Sit With</h3>
+                <h3 className="text-base font-medium text-foreground">Students You'd Like to Sit With</h3>
                 {preferences.map((pref, index) => <div key={index} className="space-y-2">
-                    <Label htmlFor={`pref-${index}`}>
-                      Preference #{index + 1} {index === 0 && "(Most preferred)"}
+                    <Label htmlFor={`pref-${index}`} className="text-sm font-normal text-muted-foreground">
+                      Preference #{index + 1} {index === 0 && "(most preferred)"}
                     </Label>
                     <Input id={`pref-${index}`} type="text" placeholder="Enter student name (optional)" value={pref} onChange={e => updatePreference(index, e.target.value.toUpperCase())} className="uppercase" />
                   </div>)}
               </div>
 
               {classSettings.allow_gender_preference && <div className="space-y-2 pt-4 border-t">
-                  <Label htmlFor="gender">Gender *</Label>
+                  <Label htmlFor="gender" className="text-sm font-normal text-muted-foreground">Gender *</Label>
                   <Select value={genderPreference || "none"} onValueChange={value => setGenderPreference(value === "none" ? "" : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your gender" />
@@ -259,14 +259,13 @@ const StudentPreferences = () => {
                   </Select>
                 </div>}
 
-
               {classSettings.allow_avoid_students && <div className="space-y-4 pt-4 border-t">
-                  <h3 className="font-semibold text-lg">Students to Avoid (Optional)</h3>
+                  <h3 className="text-base font-medium text-foreground">Students to Avoid (optional)</h3>
                   <p className="text-sm text-muted-foreground">
-                    Students you'd prefer NOT to sit near
+                    Students you'd prefer not to sit near
                   </p>
                   {avoidStudents.map((avoid, index) => <div key={index} className="space-y-2">
-                      <Label htmlFor={`avoid-${index}`}>
+                      <Label htmlFor={`avoid-${index}`} className="text-sm font-normal text-muted-foreground">
                         Avoid #{index + 1}
                       </Label>
                       <Input id={`avoid-${index}`} type="text" placeholder="Enter student name (optional)" value={avoid} onChange={e => updateAvoidStudent(index, e.target.value.toUpperCase())} className="uppercase" />
@@ -274,7 +273,7 @@ const StudentPreferences = () => {
                 </div>}
 
               <div className="space-y-2 pt-4 border-t">
-                <Label htmlFor="comments">Additional Comments (Optional)</Label>
+                <h3 className="text-base font-medium text-foreground">Additional Comments (optional)</h3>
                 <Textarea id="comments" placeholder="Any other preferences or considerations..." value={comments} onChange={e => setComments(e.target.value)} rows={4} />
               </div>
 
