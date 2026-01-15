@@ -150,7 +150,7 @@ const ClassSettings = () => {
   }
   return <div className="p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent pb-1">
           Class Settings: {settings.name}
         </h1>
 
