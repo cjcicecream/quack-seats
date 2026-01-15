@@ -142,14 +142,10 @@ const TeacherPreferences = () => {
                 <p className="text-sm text-muted-foreground">
                   Choose whose seating preferences should be prioritized first
                 </p>
-                <RadioGroup
-                  value={preferences.prioritize_student_requests ? "students" : "teacher"}
-                  onValueChange={(value) => setPreferences({
-                    ...preferences,
-                    prioritize_student_requests: value === "students"
-                  })}
-                  className="flex flex-col gap-2 mt-2"
-                >
+                <RadioGroup value={preferences.prioritize_student_requests ? "students" : "teacher"} onValueChange={value => setPreferences({
+                ...preferences,
+                prioritize_student_requests: value === "students"
+              })} className="flex flex-col gap-2 mt-2">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="students" id="prioritize-students" />
                     <Label htmlFor="prioritize-students" className="font-normal cursor-pointer">
@@ -170,26 +166,22 @@ const TeacherPreferences = () => {
               <div className="space-y-0.5 flex-1 min-w-0">
                 <Label htmlFor="avoidGroups">Avoid Large Friend Groups</Label>
                 <p className="text-sm text-muted-foreground">
-                  Prevent too many friends from sitting together at one table
+                  Prevent too many friend groupings from sitting together at one table
                 </p>
-                {preferences.avoid_large_groups && (
-                  <div className="flex items-center gap-2 mt-2">
+                {preferences.avoid_large_groups && <div className="flex items-center gap-2 mt-2">
                     <Label htmlFor="maxFriends" className="text-sm whitespace-nowrap">Max friends per table:</Label>
-                    <Select
-                      value={String(preferences.max_friends_per_table)}
-                      onValueChange={(v) => setPreferences({ ...preferences, max_friends_per_table: Number(v) })}
-                    >
+                    <Select value={String(preferences.max_friends_per_table)} onValueChange={v => setPreferences({
+                  ...preferences,
+                  max_friends_per_table: Number(v)
+                })}>
                       <SelectTrigger className="w-20">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <SelectItem key={n} value={String(n)}>{n}</SelectItem>
-                        ))}
+                        {[1, 2, 3, 4, 5].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                  </div>
-                )}
+                  </div>}
               </div>
               <Switch id="avoidGroups" checked={preferences.avoid_large_groups} onCheckedChange={checked => setPreferences({
               ...preferences,
