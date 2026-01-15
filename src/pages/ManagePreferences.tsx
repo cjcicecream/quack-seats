@@ -351,7 +351,7 @@ const ManagePreferences = () => {
                       <CollapsibleContent className="space-y-4 mt-4">
                         <div>
                           <h4 className="font-semibold mb-2">
-                            All Preferences:
+                            Preference Status:
                             {Object.keys(studentTableMap).length > 0 && (
                               <span className="text-xs font-normal text-muted-foreground ml-2">
                                 (based on latest seating chart)
